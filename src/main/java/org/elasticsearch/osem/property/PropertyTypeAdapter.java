@@ -18,7 +18,7 @@
  */
 package org.elasticsearch.osem.property;
 
-import org.elasticsearch.index.mapper.xcontent.XContentMapper;
+import org.elasticsearch.index.mapper.Mapper;
 import org.elasticsearch.osem.annotations.IndexableAttribute;
 import org.elasticsearch.osem.annotations.SerializableAttribute;
 
@@ -29,7 +29,7 @@ import org.elasticsearch.osem.annotations.SerializableAttribute;
  */
 public interface PropertyTypeAdapter<T> {
 	
-	XContentMapper.Builder<?, ?>  build(SerializableAttribute serializable, IndexableAttribute indexable, String name);	
+	Mapper.Builder<?, ?>  build(SerializableAttribute serializable, IndexableAttribute indexable, String name);	
 
 	T read(SerializableAttribute serializable, String value);
 	

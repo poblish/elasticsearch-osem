@@ -1,7 +1,7 @@
 package com.pmi.framework.store.core;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.xcontent.XContentQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 
 public class StoreTemplate implements StoreOperations {
@@ -63,7 +63,7 @@ public class StoreTemplate implements StoreOperations {
     }
 
     @Override
-    public void deleteByQuery(final XContentQueryBuilder builder) throws StoreException {
+    public void deleteByQuery(final QueryBuilder builder) throws StoreException {
         execute(new StoreCallback<Object>() {
 
             @Override
@@ -75,7 +75,7 @@ public class StoreTemplate implements StoreOperations {
     }
 
     @Override
-    public SearchResponse find(final XContentQueryBuilder builder) throws StoreException {
+    public SearchResponse find(final QueryBuilder builder) throws StoreException {
         return execute(new StoreCallback<SearchResponse>() {
 
             @Override
@@ -86,7 +86,7 @@ public class StoreTemplate implements StoreOperations {
     }
 
     @Override
-    public SearchResponse find(final XContentQueryBuilder builder, final int from, final int size) throws StoreException {
+    public SearchResponse find(final QueryBuilder builder, final int from, final int size) throws StoreException {
         return execute(new StoreCallback<SearchResponse>() {
 
             @Override

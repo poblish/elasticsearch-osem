@@ -33,11 +33,11 @@ import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.mapper.xcontent.ContentPath;
-import org.elasticsearch.index.mapper.xcontent.RootObjectMapper;
-import org.elasticsearch.index.mapper.xcontent.StringFieldMapper;
-import org.elasticsearch.index.mapper.xcontent.XContentMapper;
-import org.elasticsearch.index.mapper.xcontent.XContentMapper.BuilderContext;
+import org.elasticsearch.index.mapper.ContentPath;
+import org.elasticsearch.index.mapper.Mapper;
+import org.elasticsearch.index.mapper.Mapper.BuilderContext;
+import org.elasticsearch.index.mapper.core.StringFieldMapper;
+import org.elasticsearch.index.mapper.object.RootObjectMapper;
 import org.elasticsearch.osem.annotations.AttributeSource;
 import org.elasticsearch.osem.annotations.IndexableAttribute;
 import org.elasticsearch.osem.annotations.SearchableAttribute;
@@ -56,7 +56,7 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
 
     private static final ESLogger logger = Loggers.getLogger(ObjectContextMapperImpl.class);
 
-    private ConcurrentMap<Class<?>, Collection<XContentMapper.Builder<?, ?>>> buildersCache = new ConcurrentHashMap<Class<?>, Collection<XContentMapper.Builder<?, ?>>>();
+    private ConcurrentMap<Class<?>, Collection<Mapper.Builder<?, ?>>> buildersCache = new ConcurrentHashMap<Class<?>, Collection<Mapper.Builder<?, ?>>>();
 
     private AttributeSource attributes;;
 
@@ -170,24 +170,24 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
 
     private RootObjectMapper.Builder build(Class<?> clazz, String name) {
         RootObjectMapper.Builder objectBuilder = new RootObjectMapper.Builder(name);
-        Collection<XContentMapper.Builder<?, ?>> builders = buildersCache.get(clazz);
+        Collection<Mapper.Builder<?, ?>> builders = buildersCache.get(clazz);
         if (builders == null) {
             // FIXME [alois.cochard] if clazz is an interface generate from merging registered clazz impl + interfaces
-            builders = new ArrayList<XContentMapper.Builder<?, ?>>();
+            builders = new ArrayList<Mapper.Builder<?, ?>>();
             Map<PropertyDescriptor, SerializableAttribute> serializables = attributes.getSerializableProperties(clazz);
             Map<PropertyDescriptor, IndexableAttribute> indexables = attributes.getIndexableProperties(clazz);
             // Browsing serializables properties since all managed properties must be serializable (an indexable property IS serializable)
             for (Map.Entry<PropertyDescriptor, SerializableAttribute> entry : serializables.entrySet()) {
-                XContentMapper.Builder<?, ?> builder = build(entry.getKey(), entry.getValue(), indexables.get(entry.getKey()));
+                Mapper.Builder<?, ?> builder = build(entry.getKey(), entry.getValue(), indexables.get(entry.getKey()));
                 if (builder != null) {
                     builders.add(builder);
                 }
             }
-            Collection<XContentMapper.Builder<?, ?>> b = buildersCache.putIfAbsent(clazz, builders);
+            Collection<Mapper.Builder<?, ?>> b = buildersCache.putIfAbsent(clazz, builders);
             builders = b != null ? b : builders;
         }
 
-        for (XContentMapper.Builder<?, ?> builder : builders) {
+        for (Mapper.Builder<?, ?> builder : builders) {
             objectBuilder.add(builder);
         }
 
@@ -199,7 +199,7 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
         return objectBuilder;
     }
 
-    private XContentMapper.Builder<?, ?> build(PropertyDescriptor property, SerializableAttribute serializable, IndexableAttribute indexable) {
+    private Mapper.Builder<?, ?> build(PropertyDescriptor property, SerializableAttribute serializable, IndexableAttribute indexable) {
         PropertySignature signature = signatures.get(property);
         String name = indexable.getIndexName() == null ? property.getName() : indexable.getIndexName();
         switch (signature.getType()) {

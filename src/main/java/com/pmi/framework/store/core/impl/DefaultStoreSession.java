@@ -3,7 +3,6 @@ package com.pmi.framework.store.core.impl;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.xcontent.XContentQueryBuilder;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.osem.core.ObjectContext;
 import org.elasticsearch.search.SearchHit;
@@ -13,6 +12,7 @@ import org.elasticsearch.transport.RemoteTransportException;
 import com.pmi.framework.store.core.IdentifierNotFoundException;
 import com.pmi.framework.store.core.StoreException;
 import com.pmi.framework.store.core.StoreSession;
+import org.elasticsearch.index.query.QueryBuilder;
 
 public class DefaultStoreSession implements StoreSession {
 
@@ -55,17 +55,17 @@ public class DefaultStoreSession implements StoreSession {
     }
 
     @Override
-    public void deleteByQuery(XContentQueryBuilder builder) throws StoreException {
+    public void deleteByQuery(QueryBuilder builder) throws StoreException {
         client.prepareDeleteByQuery(index).setQuery(builder).execute();
     }
 
     @Override
-    public SearchResponse find(XContentQueryBuilder builder) throws StoreException {
+    public SearchResponse find(QueryBuilder builder) throws StoreException {
         return client.prepareSearch(index).setQuery(builder).execute().actionGet();
     }
 
     @Override
-    public SearchResponse find(XContentQueryBuilder builder, int from, int size) throws StoreException {
+    public SearchResponse find(QueryBuilder builder, int from, int size) throws StoreException {
         return client.prepareSearch(index).setQuery(builder).setFrom(from).setSize(size).execute().actionGet();
     }
 
