@@ -110,8 +110,11 @@ public class AttributeSourceImpl implements AttributeSource {
             if (searchable != null) {
                 searchableAttr = AttributeBuilder.build(searchable);
             }
-            SearchableAttribute s = searchables.putIfAbsent(clazz, searchableAttr);
-            searchableAttr = s != null ? s : searchableAttr;
+
+	    if ( searchableAttr != null)	{	// (AGR) Allowing null will cause pointless NPE
+		SearchableAttribute s = searchables.putIfAbsent(clazz, searchableAttr);
+		searchableAttr = s != null ? s : searchableAttr;
+	    }
         } else {
             searchableAttr = searchables.get(clazz);
         }
@@ -217,7 +220,15 @@ public class AttributeSourceImpl implements AttributeSource {
                     name = attribute.getIndexName();
                 }
                 name = name == null ? property.getName() : name;
-                properties.put(name, property);
+ 
+		final PropertyDescriptor	theCurrProperty = properties.get(name);
+
+		if ( theCurrProperty != null && ( property.getReadMethod() == null && property != null)) {
+			// System.out.println( ":: SKIP BAD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
+			continue;
+		}
+
+		properties.put(name, property);
             }
             Map<String, PropertyDescriptor> p = classProperties.putIfAbsent(clazz, properties);
             properties = p != null ? p : properties;

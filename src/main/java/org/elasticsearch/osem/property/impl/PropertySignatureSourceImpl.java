@@ -43,6 +43,9 @@ public class PropertySignatureSourceImpl implements PropertySignatureSource {
 
     @Override
     public PropertySignature get(PropertyDescriptor property) {
+	if ( property != null && property.getReadMethod() == null) {	// (AGR)
+		throw new RuntimeException("Missing Read method for property '" + property.getName() + "' of type " + property.getPropertyType());
+	}
         return get(property.getReadMethod().getGenericReturnType());
     }
 
