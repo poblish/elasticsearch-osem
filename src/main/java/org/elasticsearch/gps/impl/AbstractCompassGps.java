@@ -20,6 +20,8 @@ import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.compass.core.Compass;
+import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.CompassGpsDevice;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.DefaultIndexPlan;
@@ -71,17 +73,19 @@ public abstract class AbstractCompassGps implements CompassGpsInterfaceDevice {
         }
     }
 
-/* (AGR_OSEM)
-    protected boolean hasRootMappingForEntity(Class clazz, Compass checkedCompass) {
-        return getRootMappingForEntity(clazz, checkedCompass) != null;
-    }
-
     protected boolean hasMappingForEntity(Class clazz, Compass checkedCompass, Cascade cascade) {
-        return ((InternalCompass) checkedCompass).getMapping().hasMappingForClass(clazz, cascade);
+        // (AGR_OSEM) ... return ((InternalCompass) checkedCompass).getMapping().hasMappingForClass(clazz, cascade);
+	    return false;
     }
 
     protected boolean hasMappingForEntity(String name, Compass checkedCompass, Cascade cascade) {
-        return ((InternalCompass) checkedCompass).getMapping().hasMappingForAlias(name, cascade);
+        // (AGR_OSEM) ... return ((InternalCompass) checkedCompass).getMapping().hasMappingForAlias(name, cascade);
+	    return false;
+    }
+
+/* (AGR_OSEM)
+    protected boolean hasRootMappingForEntity(Class clazz, Compass checkedCompass) {
+        return getRootMappingForEntity(clazz, checkedCompass) != null;
     }
 
     protected ResourceMapping getRootMappingForEntity(Class clazz, Compass checkedCompass) {

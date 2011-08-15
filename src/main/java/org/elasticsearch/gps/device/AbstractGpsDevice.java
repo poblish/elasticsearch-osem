@@ -21,9 +21,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-// (AGR_OSEM) import org.compass.core.CompassCallbackWithoutResult;
-// (AGR_OSEM) import org.compass.core.CompassException;
-// (AGR_OSEM) import org.compass.core.CompassSession;
 import org.elasticsearch.gps.CompassGps;
 import org.elasticsearch.gps.CompassGpsDevice;
 import org.elasticsearch.gps.CompassGpsException;

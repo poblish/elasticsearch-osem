@@ -16,6 +16,7 @@
 
 package org.elasticsearch.gps.spi;
 
+import org.compass.core.Compass;
 import org.compass.core.CompassException;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.CompassGps;
@@ -79,12 +80,12 @@ public interface CompassGpsInterfaceDevice extends CompassGps {
      * no operations that will affect the index should be made using it, use
      * {@link #executeForIndex(CompassCallback)} operation instead.
      */
-    // (AGR_OSEM) ... Compass getIndexCompass();
+    Compass getIndexCompass();
 
     /**
      * Returns the <code>Compass</code> instance used for mirroring. Note that
      * no operations that will affect the index should be made using it, use
      * {@link #executeForMirror(CompassCallback)} operation instead.
      */
-    // (AGR_OSEM) ... Compass getMirrorCompass();
+    Compass getMirrorCompass();
 }

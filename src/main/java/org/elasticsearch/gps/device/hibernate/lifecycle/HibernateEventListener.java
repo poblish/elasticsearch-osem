@@ -26,10 +26,12 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.compass.core.CompassSession;
+import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDeviceException;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
 import org.hibernate.engine.CollectionEntry;
+import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.event.EventSource;
 import org.hibernate.event.PostDeleteEvent;
 import org.hibernate.event.PostDeleteEventListener;
@@ -44,7 +46,9 @@ import org.hibernate.event.PostUpdateEventListener;
  * @author kimchy
  * @see org.compass.gps.device.hibernate.lifecycle.DefaultHibernateEntityLifecycleInjector
  */
-public class HibernateEventListener implements PostInsertEventListener, PostUpdateEventListener, PostDeleteEventListener {
+public class HibernateEventListener implements PostInsertEventListener, PostUpdateEventListener, PostDeleteEventListener
+{
+    private static final long serialVersionUID = 1L;
 
     protected final Log log = LogFactory.getLog(getClass());
 
@@ -79,11 +83,10 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
 
         final Object entity = postInsertEvent.getEntity();
 
-/* (AGR_OSEM)
 	if (!compassGps.hasMappingForEntityForMirror(entity.getClass(), Cascade.CREATE)) {
             return;
         }
-*/
+
         if (mirrorFilter != null) {
             if (mirrorFilter.shouldFilterInsert(postInsertEvent)) {
                 return;
@@ -120,11 +123,10 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
 
         final Object entity = postUpdateEvent.getEntity();
 
-/* (AGR_OSEM)
         if (!compassGps.hasMappingForEntityForMirror(entity.getClass(), Cascade.SAVE)) {
             return;
         }
-*/
+
         if (mirrorFilter != null) {
             if (mirrorFilter.shouldFilterUpdate(postUpdateEvent)) {
                 return;
@@ -173,11 +175,10 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
 
         final Object entity = postDeleteEvent.getEntity();
 
-/* (AGR_OSEM)
         if (!compassGps.hasMappingForEntityForMirror(entity.getClass(), Cascade.DELETE)) {
             return;
         }
-*/
+
         if (mirrorFilter != null) {
             if (mirrorFilter.shouldFilterDelete(postDeleteEvent)) {
                 return;
@@ -217,8 +218,7 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
         if (pendingCascades) {
             HibernateEventListenerUtils.registerRemovalHook(postInsertEvent.getSession(), pendingCreate, entity);
 
-// (AGR_OSEM)	Collection dependencies = HibernateEventListenerUtils.getUnpersistedCascades(compassGps, entity, (SessionFactoryImplementor) device.getSessionFactory(), Cascade.CREATE, new HashSet());
-/* (AGR_OSEM) */	Collection dependencies = Collections.emptyList();
+	    Collection dependencies = HibernateEventListenerUtils.getUnpersistedCascades(compassGps, entity, (SessionFactoryImplementor) device.getSessionFactory(), Cascade.CREATE, new HashSet());
 	    
 	    if (!dependencies.isEmpty()) {
                 pendingCreate.put(entity, dependencies);
@@ -248,8 +248,8 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
     protected void doUpdate(CompassSession session, CompassGpsInterfaceDevice compassGps, Object entity, EventSource eventSource) {
         if (pendingCascades) {
             HibernateEventListenerUtils.registerRemovalHook(eventSource, pendingSave, entity);
-// (AGR_OSEM)	Collection dependencies = HibernateEventListenerUtils.getUnpersistedCascades(compassGps, entity, (SessionFactoryImplementor) device.getSessionFactory(), Cascade.SAVE, new HashSet());
-/* (AGR_OSEM) */	Collection dependencies = Collections.emptyList();
+
+	    Collection dependencies = HibernateEventListenerUtils.getUnpersistedCascades(compassGps, entity, (SessionFactoryImplementor) device.getSessionFactory(), Cascade.SAVE, new HashSet());
 
 	    if (!dependencies.isEmpty()) {
                 pendingSave.put(entity, dependencies);

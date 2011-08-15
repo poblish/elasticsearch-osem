@@ -162,13 +162,11 @@ public class SingleCompassGps extends AbstractCompassGps {
     }
 
     public boolean hasMappingForEntityForMirror(Class clazz, Cascade cascade) throws CompassException {
-        // (AGR_OSEM) ... return hasMappingForEntity(clazz, compass, cascade);
-	/* (AGR_OSEM) */ return false;
+        return hasMappingForEntity(clazz, compass, cascade);
     }
 
     public boolean hasMappingForEntityForMirror(String name, Cascade cascade) throws CompassException {
-        // (AGR_OSEM) ... return hasMappingForEntity(name, compass, cascade);
-	/* (AGR_OSEM) */ return false;
+        return hasMappingForEntity(name, compass, cascade);
     }
 
 /* (AGR_OSEM)

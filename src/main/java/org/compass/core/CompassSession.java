@@ -8,7 +8,7 @@ package org.compass.core;
  *
  * @author andrewregan
  */
-public interface /* (AGR_OSEM) */ CompassSession extends CompassSearchSession, CompassIndexSession
+public interface CompassSession extends CompassSearchSession, CompassIndexSession
 {
     /**
      * Indicates that the session will be used for read only operations. Allowing to optimize

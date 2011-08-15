@@ -20,6 +20,7 @@ import java.io.Serializable;
 import javax.naming.Referenceable;
 
 import org.compass.core.config.CompassSettings;
+import org.elasticsearch.osem.core.ObjectContext;
 
 /**
  * Creates a CompassSession. Usually an application has a single Compass object.
@@ -40,6 +41,8 @@ import org.compass.core.config.CompassSettings;
  * @see org.compass.core.config.CompassConfiguration
  */
 public interface Compass extends Referenceable, Serializable {
+
+	ObjectContext	getObjectContext();
 
     /**
      * If there is a transaction bound session, will return it. Otherwise
