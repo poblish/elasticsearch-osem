@@ -4,6 +4,9 @@
  */
 package org.elasticsearch.osem.hibernate;
 
+import javax.persistence.EntityManager;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
 import org.compass.core.config.CompassSettings;
 import org.elasticsearch.osem.test.entities.impl.Actor;
 import org.elasticsearch.client.Client;
@@ -32,6 +35,8 @@ import static org.powermock.api.easymock.PowerMock.createMock;
 // @RunWith(PowerMockRunner.class)
 public class BasicHibTest
 {
+	private final static String	INDEX = "AbstractArticle".toLowerCase();
+
 	@Test
 	public void basicTest()
 	{
@@ -58,17 +63,18 @@ public class BasicHibTest
 
 		//////////////////////////////////////////////////////////////////////////////////////
 
-//		CompassConfiguration	theCompassConfig = new CompassConfiguration();
 		Compass			theCompass = createMock( Compass.class );
 
 		expect( theCompass.getSettings() ).andReturn(theCompassSettings).atLeastOnce();
+		expect( theCompass.getObjectContext() ).andReturn(theCtxt).atLeastOnce();
 
 		replay(theCompass);
 
 		//////////////////////////////////////////////////////////////////////////////////////
 
 		EntityManagerFactory	theEMF = Persistence.createEntityManagerFactory("OsemTestPU");
-		Session			theHibSession = (Session) theEMF.createEntityManager().getDelegate();
+		final EntityManager	theEM = theEMF.createEntityManager();
+		final Session		theHibSession = (Session) theEM.getDelegate();
 		HibernateGpsDevice	theDevice = new HibernateGpsDevice("Hib", theHibSession.getSessionFactory());
 
 	//	theDevice.setIgnoreMirrorExceptions(true);
@@ -77,10 +83,42 @@ public class BasicHibTest
 		final CompassGps		theCompassGps = new SingleCompassGps(theCompass);
 		theCompassGps.addGpsDevice(theDevice);
 
-		// Runtime.getRuntime().addShutdownHook(new CompassShutdownHook());
-
 		System.out.println("Starting Compass... " + theCompassGps);
 
 		theCompassGps.start();
+
+		//////////////////////////////////////////////////////////////////////////////////////
+
+		final ArticleIF	theArticle = new TestArticle();
+		theArticle.setContent("As long as British governments back wars and occupations in the Middle East and Muslim world, there will continue to be a risk of violence in Britain. But attempts to drive British Muslims out of normal political activity, and the refusal to confront anti-Muslim hatred, can only ratchet up the danger and threaten us all.");
+		theArticle.setTitle("Seumas Milne");
+
+	//	final ActorIF		theActor = new Actor( "aregan", "Andrew", "Regan", "", null);
+	//	final BlogIF		theBlog = new Blog( theActor, "http://www.poblish.org/blog/", Locale.UK);
+	//	final ActorResourceIF	theRes = new Feed( theBlog, "http://www.poblish.org/blog/", "desc", false, Locale.UK);
+
+	//	theArticle.setResource(theRes);
+
+		if (!theEM.getTransaction().isActive())
+		{
+			theEM.getTransaction().begin();
+		}
+
+		theEM.persist(theArticle);
+		theEM.flush();
+		theEM.getTransaction().commit();
+
+		//////////////////////////////////////////////////////////////////////////////////////
+
+//		final IndexResponse	theResponse = client.prepareIndex( INDEX, "xxx", "1980")
+//							    .setSource( theCtxt.write(theArticle) )
+//							    .execute()
+//							    .actionGet();
+
+//		System.out.println("theResp = " + theResponse + " / " + theResponse.id());
+
+		//////////////////////////////////////////////////////////////////////////////////////
+
+		client.close();
 	}
 }

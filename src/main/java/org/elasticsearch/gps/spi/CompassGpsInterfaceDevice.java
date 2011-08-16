@@ -17,6 +17,7 @@
 package org.elasticsearch.gps.spi;
 
 import org.compass.core.Compass;
+import org.compass.core.CompassCallback;
 import org.compass.core.CompassException;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.CompassGps;
@@ -68,12 +69,12 @@ public interface CompassGpsInterfaceDevice extends CompassGps {
     /**
      * Executes the given callback for index operations.
      */
-    // (AGR_OSEM) ... void executeForIndex(CompassCallback callback) throws CompassException;
+    void executeForIndex(CompassCallback callback) throws CompassException;
 
     /**
      * Executes the given callback for mirror operations.
      */
-    // (AGR_OSEM) ... void executeForMirror(CompassCallback callback) throws CompassException;
+    void executeForMirror(CompassCallback callback) throws CompassException;
 
     /**
      * Returns the <code>Compass</code> instance used for indexing. Note that

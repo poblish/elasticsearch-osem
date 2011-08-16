@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.compass.core.Compass;
+import org.compass.core.CompassCallback;
 import org.compass.core.CompassException;
 import org.compass.core.config.CompassSettings;
 import org.compass.core.mapping.Cascade;
@@ -139,18 +140,22 @@ public class SingleCompassGps extends AbstractCompassGps {
 */
     }
 
+
+    public void executeForIndex(CompassCallback callback) throws CompassException
+    {
 /* (AGR_OSEM)
-    public void executeForIndex(CompassCallback callback) throws CompassException {
         if (indexCompassTemplate == null) {
             throw new IllegalStateException("executeForIndex is called outside of an index operation");
         }
-        indexCompassTemplate.execute(callback);
+        indexCompassTemplate.execute(callback); */
+	System.out.println("executeForIndex()");
     }
 
     public void executeForMirror(CompassCallback callback) throws CompassException {
-        compassTemplate.execute(callback);
+        // (AGR_OSEM) ... compassTemplate.execute(callback);
+	System.out.println("executeForMirror()");
     }
-*/
+
     public boolean hasMappingForEntityForIndex(Class clazz) throws CompassException {
         // (AGR_OSEM) ... return hasRootMappingForEntity(clazz, getIndexCompass());
 	/* (AGR_OSEM) */ return false;

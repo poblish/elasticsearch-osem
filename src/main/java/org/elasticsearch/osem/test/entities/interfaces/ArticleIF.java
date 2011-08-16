@@ -10,4 +10,7 @@ package org.elasticsearch.osem.test.entities.interfaces;
  */
 public interface ArticleIF
 {
+	void setContent( final String inContent);
+	void setTitle( final String inContent);
+	void setResource(ActorResourceIF inRes);
 }

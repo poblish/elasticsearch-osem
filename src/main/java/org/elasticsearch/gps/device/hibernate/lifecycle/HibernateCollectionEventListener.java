@@ -18,6 +18,10 @@ package org.elasticsearch.gps.device.hibernate.lifecycle;
 
 import java.io.Serializable;
 
+import org.compass.core.CompassCallbackWithoutResult;
+import org.compass.core.CompassException;
+import org.compass.core.CompassSession;
+import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDeviceException;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
@@ -77,11 +81,9 @@ public class HibernateCollectionEventListener extends HibernateEventListener imp
 
         final CompassGpsInterfaceDevice compassGps = (CompassGpsInterfaceDevice) device.getGps();
 
-/* (AGR_OSEM)
         if (!compassGps.hasMappingForEntityForMirror(entity.getClass(), Cascade.SAVE)) {
             return;
         }
-*/
 
         Serializable id = getId(entity, event);
         if (id == null) {
@@ -92,13 +94,13 @@ public class HibernateCollectionEventListener extends HibernateEventListener imp
             if (log.isTraceEnabled()) {
                 log.trace(device.buildMessage("Updating [" + entity + "]"));
             }
-/* (AGR_OSEM)
+
             compassGps.executeForMirror(new CompassCallbackWithoutResult() {
                 protected void doInCompassWithoutResult(CompassSession session) throws CompassException {
                     doUpdate(session, compassGps, entity, event.getSession());
                 }
             });
-*/
+
         } catch (Exception e) {
             if (device.isIgnoreMirrorExceptions()) {
                 log.error(device.buildMessage("Failed while updating [" + entity + "]"), e);
