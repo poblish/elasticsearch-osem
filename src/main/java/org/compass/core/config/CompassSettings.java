@@ -23,7 +23,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.compass.core.util.ClassUtils;
+import org.elasticsearch.osem.common.springframework.util.ClassUtils;
 
 /**
  * A set of settings that are used to configure the Compass instance.

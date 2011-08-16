@@ -17,6 +17,7 @@
 package org.compass.core.util;
 
 import java.lang.reflect.Field;
+import org.elasticsearch.osem.common.springframework.util.Assert;
 
 /**
  *

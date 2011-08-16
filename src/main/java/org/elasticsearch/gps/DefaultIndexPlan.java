@@ -16,7 +16,8 @@
 
 package org.elasticsearch.gps;
 
-import org.compass.core.util.StringUtils;
+import org.elasticsearch.osem.common.springframework.util.StringUtils;
+
 
 /**
  * @author kimchy
