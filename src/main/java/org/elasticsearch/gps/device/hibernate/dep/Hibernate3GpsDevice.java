@@ -21,12 +21,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.compass.core.CompassCallbackWithoutResult;
+import org.compass.core.CompassException;
+import org.compass.core.CompassSession;
 import org.compass.core.mapping.Cascade;
 import org.compass.core.util.FieldInvoker;
 import org.compass.core.util.MethodInvoker;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.PassiveMirrorGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDeviceException;
+import org.elasticsearch.osem.common.springframework.util.ClassUtils;
 import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -228,13 +232,12 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
                 if (log.isDebugEnabled()) {
                     log.debug(buildMessage("Updating [" + entity + "]"));
                 }
-/* (AGR_OSEM)
+
                 compassGps.executeForMirror(new CompassCallbackWithoutResult() {
                     protected void doInCompassWithoutResult(CompassSession session) throws CompassException {
                         session.save(entity);
                     }
                 });
-*/
             } catch (Exception e) {
                 if (isIgnoreMirrorExceptions()) {
                     log.error(buildMessage("Failed while updating [" + entity + "]"), e);
@@ -288,14 +291,14 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
                 if (log.isDebugEnabled()) {
                     log.debug(buildMessage("Deleting [" + entity + "]"));
                 }
-/* (AGR_OSEM)
+
                 compassGps.executeForMirror(new CompassCallbackWithoutResult() {
                     protected void doInCompassWithoutResult(CompassSession session) throws CompassException {
                         session.delete(entity);
                     }
                 });
-*/
-            } catch (Exception e) {
+            }
+	    catch (Exception e) {
                 if (isIgnoreMirrorExceptions()) {
                     log.error(buildMessage("Failed while deleting [" + entity + "]"), e);
                 } else {
@@ -362,14 +365,12 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
         if (isMirrorDataChanges()) {
             SessionFactory actualSessionFactory = doGetActualSessionFactory();
 
-/* (AGR_OSEM)
             try {
                 ClassUtils.forName("org.hibernate.event.SessionEventListenerConfig", compassGps.getMirrorCompass().getSettings().getClassLoader());
                 registerEventsForHibernate30(actualSessionFactory);
             } catch (ClassNotFoundException e) {
                 registerEventsForHibernate31(actualSessionFactory);
             }
-*/
         }
     }
 
@@ -377,14 +378,12 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
         if (isMirrorDataChanges()) {
             SessionFactory actualSessionFactory = doGetActualSessionFactory();
 
-/* (AGR_OSEM)
             try {
                 ClassUtils.forName("org.hibernate.event.SessionEventListenerConfig", compassGps.getMirrorCompass().getSettings().getClassLoader());
                 unregisterEventsForHibernate30(actualSessionFactory);
             } catch (ClassNotFoundException e) {
                 unregisterEventsForHibernate31(actualSessionFactory);
             }
-*/
         }
     }
 
@@ -503,7 +502,7 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
 
     private void registerEventsForHibernate30(SessionFactory sessionFactory) {
         try {
-            Class sessionEventListenerConfigClass = null;	// (AGR_OSEM) ... ClassUtils.forName("org.hibernate.event.SessionEventListenerConfig", compassGps.getMirrorCompass().getSettings().getClassLoader());
+            Class sessionEventListenerConfigClass = ClassUtils.forName("org.hibernate.event.SessionEventListenerConfig", compassGps.getMirrorCompass().getSettings().getClassLoader());
 
             FieldInvoker sessionFactorySessionEventListenerConfig =
                     new FieldInvoker(SessionFactoryImpl.class, "sessionEventListenerConfig").prepare();
@@ -527,7 +526,7 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
 
     private void unregisterEventsForHibernate30(SessionFactory sessionFactory) {
         try {
-            Class sessionEventListenerConfigClass = null;	// (AGR_OSEM) ... ClassUtils.forName("org.hibernate.event.SessionEventListenerConfig", compassGps.getMirrorCompass().getSettings().getClassLoader());
+            Class sessionEventListenerConfigClass = ClassUtils.forName("org.hibernate.event.SessionEventListenerConfig", compassGps.getMirrorCompass().getSettings().getClassLoader());
 
             FieldInvoker sessionFactorySessionEventListenerConfig =
                     new FieldInvoker(SessionFactoryImpl.class, "sessionEventListenerConfig").prepare();
@@ -559,7 +558,7 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
 
     private void registerEventsForHibernate31(SessionFactory sessionFactory) {
         try {
-            Class eventListenersClass = null;	// (AGR_OSEM) ... ClassUtils.forName("org.hibernate.event.EventListeners", compassGps.getMirrorCompass().getSettings().getClassLoader());
+            Class eventListenersClass = ClassUtils.forName("org.hibernate.event.EventListeners", compassGps.getMirrorCompass().getSettings().getClassLoader());
 
             Object eventListeners =
                     new FieldInvoker(SessionFactoryImpl.class, "eventListeners").prepare().get(sessionFactory);
@@ -594,7 +593,7 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
 
     private void unregisterEventsForHibernate31(SessionFactory sessionFactory) {
         try {
-            Class eventListenersClass = null;	// (AGR_OSEM) ... ClassUtils.forName("org.hibernate.event.EventListeners", compassGps.getMirrorCompass().getSettings().getClassLoader());
+            Class eventListenersClass = ClassUtils.forName("org.hibernate.event.EventListeners", compassGps.getMirrorCompass().getSettings().getClassLoader());
 
             Object eventListeners =
                     new FieldInvoker(SessionFactoryImpl.class, "eventListeners").prepare().get(sessionFactory);
@@ -643,20 +642,18 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
         } catch (Throwable t) {
             // do nothing
         }
-/* (AGR_OSEM)
+
         try {
             ClassUtils.forName("org.hibernate.event.SessionEventListenerConfig", compassGps.getMirrorCompass().getSettings().getClassLoader());
             return isInherited30(classMetadata);
         } catch (ClassNotFoundException e) {
             return isInherited31(classMetadata);
         }
- */
-	return false;
     }
 
     private boolean isInherited30(ClassMetadata classMetadata) throws HibernateGpsDeviceException {
         try {
-            Class basicEntityPersisterClass = null;	// (AGR_OSEM) ... ClassUtils.forName("org.hibernate.persister.entity.BasicEntityPersister", compassGps.getMirrorCompass().getSettings().getClassLoader());
+            Class basicEntityPersisterClass = ClassUtils.forName("org.hibernate.persister.entity.BasicEntityPersister", compassGps.getMirrorCompass().getSettings().getClassLoader());
             Object entityMetamodel =
                     new FieldInvoker(basicEntityPersisterClass, "entityMetamodel").prepare().get(classMetadata);
             MethodInvoker isInheritedMethodInvoker = new MethodInvoker();
@@ -672,7 +669,7 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
 
     private boolean isInherited31(ClassMetadata classMetadata) throws HibernateGpsDeviceException {
         try {
-            Class abstractEntityPersisterClass = null;	// (AGR_OSEM) ... ClassUtils.forName("org.hibernate.persister.entity.AbstractEntityPersister", compassGps.getMirrorCompass().getSettings().getClassLoader());
+            Class abstractEntityPersisterClass = ClassUtils.forName("org.hibernate.persister.entity.AbstractEntityPersister", compassGps.getMirrorCompass().getSettings().getClassLoader());
             Object entityMetamodel =
                     new FieldInvoker(abstractEntityPersisterClass, "entityMetamodel").prepare().get(classMetadata);
             MethodInvoker isInheritedMethodInvoker = new MethodInvoker();

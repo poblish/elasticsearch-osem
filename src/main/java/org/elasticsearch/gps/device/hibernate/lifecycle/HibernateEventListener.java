@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.compass.core.CompassCallbackWithoutResult;
+import org.compass.core.CompassException;
 import org.compass.core.CompassSession;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
@@ -98,13 +100,12 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
                 log.trace(device.buildMessage("Creating [" + entity + "]"));
             }
 
-/* (AGR_OSEM)
+
             compassGps.executeForMirror(new CompassCallbackWithoutResult() {
                 protected void doInCompassWithoutResult(CompassSession session) throws CompassException {
                     doInsert(session, postInsertEvent, entity, compassGps);
                 }
             });
-*/
         } catch (Exception e) {
             if (device.isIgnoreMirrorExceptions()) {
                 log.error(device.buildMessage("Failed while creating [" + entity + "]"), e);
@@ -141,13 +142,12 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
             if (log.isTraceEnabled()) {
                 log.trace(device.buildMessage("Updating [" + entity + "]"));
             }
-/* (AGR_OSEM)
+
             compassGps.executeForMirror(new CompassCallbackWithoutResult() {
                 protected void doInCompassWithoutResult(CompassSession session) throws CompassException {
                     doUpdate(session, compassGps, entity, postUpdateEvent.getSession());
                 }
             });
-*/
         } catch (Exception e) {
             if (device.isIgnoreMirrorExceptions()) {
                 log.error(device.buildMessage("Failed while updating [" + entity + "]"), e);
@@ -190,14 +190,13 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
                 log.trace(device.buildMessage("Deleting [" + entity + "]"));
             }
 
-/* (AGR_OSEM)
             compassGps.executeForMirror(new CompassCallbackWithoutResult() {
                 protected void doInCompassWithoutResult(CompassSession session) throws CompassException {
                     session.delete(entity);
                 }
             });
-*/
-        } catch (Exception e) {
+        }
+	catch (Exception e) {
             if (device.isIgnoreMirrorExceptions()) {
                 log.error(device.buildMessage("Failed while deleting [" + entity + "]"), e);
             } else {
