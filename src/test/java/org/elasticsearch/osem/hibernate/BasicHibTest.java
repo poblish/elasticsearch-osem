@@ -4,8 +4,11 @@
  */
 package org.elasticsearch.osem.hibernate;
 
+import org.elasticsearch.osem.test.entities.interfaces.ActorIF;
+import java.util.Locale;
+import org.elasticsearch.osem.test.entities.interfaces.ActorResourceIF;
+import org.elasticsearch.osem.test.entities.interfaces.BlogIF;
 import javax.persistence.EntityManager;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
 import org.compass.core.config.CompassSettings;
 import org.elasticsearch.osem.test.entities.impl.Actor;
@@ -93,16 +96,18 @@ public class BasicHibTest
 		theArticle.setContent("As long as British governments back wars and occupations in the Middle East and Muslim world, there will continue to be a risk of violence in Britain. But attempts to drive British Muslims out of normal political activity, and the refusal to confront anti-Muslim hatred, can only ratchet up the danger and threaten us all.");
 		theArticle.setTitle("Seumas Milne");
 
-	//	final ActorIF		theActor = new Actor( "aregan", "Andrew", "Regan", "", null);
-	//	final BlogIF		theBlog = new Blog( theActor, "http://www.poblish.org/blog/", Locale.UK);
-	//	final ActorResourceIF	theRes = new Feed( theBlog, "http://www.poblish.org/blog/", "desc", false, Locale.UK);
-
-	//	theArticle.setResource(theRes);
+		final ActorIF		theActor = new Actor( "aregan", "Andrew", "Regan", "", null);
+		final BlogIF		theBlog = new Blog( theActor, "http://www.poblish.org/blog/", Locale.UK);
+		final ActorResourceIF	theFeed = new Feed( theBlog, "http://www.poblish.org/blog/", "desc", false, Locale.UK);
 
 		if (!theEM.getTransaction().isActive())
 		{
 			theEM.getTransaction().begin();
 		}
+
+		theEM.persist(theFeed);
+
+		theArticle.setResource(theFeed);
 
 		theEM.persist(theArticle);
 		theEM.flush();
