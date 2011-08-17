@@ -29,6 +29,7 @@ import org.compass.core.CompassSession;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
 import org.elasticsearch.osem.common.springframework.util.Assert;
+import org.elasticsearch.osem.core.ElasticSearchSession;
 import org.hibernate.EntityMode;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.event.EventSource;
@@ -226,16 +227,17 @@ public abstract class HibernateEventListenerUtils {
 		return dependencies;
 	}
 
-    public static void persistPending(CompassSession session, Object entity, Map<Object, Collection> pendingMap, boolean create) {
+    public static void persistPending(CompassSession session, Object entity, Map<Object, Collection> pendingMap, boolean create)
+    {
         for (Iterator iter = pendingMap.keySet().iterator(); iter.hasNext();) {
             Object pending = iter.next();
             Collection dependencies = pendingMap.get(pending);
             if (dependencies.remove(entity)) {
                 if (dependencies.isEmpty()) {
                     if (create) {
-                        session.create(pending);
+                        ElasticSearchSession.createEntity( session, pending);
                     } else {
-                        session.save(pending);
+                        ElasticSearchSession.saveEntity( session, pending);
                     }
                     iter.remove();
                 }
