@@ -23,10 +23,12 @@ import java.util.Properties;
 import org.compass.core.Compass;
 import org.compass.core.CompassCallback;
 import org.compass.core.CompassException;
+import org.compass.core.CompassSession;
 import org.compass.core.config.CompassSettings;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.IndexPlan;
+import org.elasticsearch.osem.core.ElasticSearchSession;
 
 /**
  * <p>A {@link org.compass.gps.CompassGps} implementation that holds a
@@ -151,9 +153,15 @@ public class SingleCompassGps extends AbstractCompassGps {
 	System.out.println("executeForIndex()");
     }
 
-    public void executeForMirror(CompassCallback callback) throws CompassException {
-        // (AGR_OSEM) ... compassTemplate.execute(callback);
-	System.out.println("executeForMirror()");
+    public void executeForMirror( CompassCallback callback) throws CompassException
+    {
+	final CompassSession	theSsn = new ElasticSearchSession( compass.getObjectContext() );
+
+	System.out.println("executeForMirror() theSsn = " + theSsn);
+
+	callback.doInCompass(theSsn);
+
+	theSsn.close();
     }
 
     public boolean hasMappingForEntityForIndex(Class clazz) throws CompassException {
