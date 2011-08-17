@@ -10,4 +10,6 @@ package org.elasticsearch.osem.test.entities.interfaces;
  */
 public interface BlogIF extends ActorResourceIF
 {
+	void addFeed( FeedIF x);
+	String getURL();
 }

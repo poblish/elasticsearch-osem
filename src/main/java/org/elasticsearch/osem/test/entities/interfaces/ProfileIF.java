@@ -8,7 +8,6 @@ package org.elasticsearch.osem.test.entities.interfaces;
  *
  * @author andrewregan
  */
-public interface ActorIF
+public interface ProfileIF
 {
-	String getUserName();
 }
