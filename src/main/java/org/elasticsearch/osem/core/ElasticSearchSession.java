@@ -67,7 +67,18 @@ public class ElasticSearchSession implements CompassSession
 
 		System.out.println("create() theSsn = " + theSsn);
 
-		final String		theId = m_Ctxt.getId(inEntity);
+		String		theId = m_Ctxt.getId(inEntity);
+		
+		if ( theId == null)
+		{
+			theId = m_Ctxt.getAttributeId(inEntity);
+
+			if ( theId == null)
+			{
+				throw new RuntimeException("Null Id - cannot continue.");
+			}
+		}
+
 		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
 
 		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx.toLowerCase(), "xxx", theId)
@@ -76,6 +87,46 @@ public class ElasticSearchSession implements CompassSession
 								.actionGet();
 
 		System.out.println("create() DONE: " + inEntity);
+	}
+
+	/****************************************************************************
+	 * FIXME: copy/paste from create()
+	****************************************************************************/
+	@Override
+	public void save( final Object inEntity) throws CompassException
+	{
+		final CompassSession	theSsn = new ElasticSearchSession(m_Ctxt);
+
+		System.out.println("save() theSsn = " + theSsn);
+
+		String		theId = m_Ctxt.getId(inEntity);
+		
+		if ( theId == null)
+		{
+			theId = m_Ctxt.getAttributeId(inEntity);
+
+			if ( theId == null)
+			{
+				throw new RuntimeException("Null Id - cannot continue.");
+			}
+		}
+
+		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
+
+		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx.toLowerCase(), "xxx", theId)
+								.setSource( m_Ctxt.write(inEntity) )
+								.execute()
+								.actionGet();
+
+		System.out.println("save() DONE: " + inEntity);
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override
+	public void save(String alias, Object obj) throws CompassException
+	{
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	/****************************************************************************
@@ -240,18 +291,5 @@ public class ElasticSearchSession implements CompassSession
 	public void delete(Class clazz, Object... ids) throws CompassException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
-	public void save(Object obj) throws CompassException
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
-	public void save(String alias, Object obj) throws CompassException
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-	
+	}	
 }
