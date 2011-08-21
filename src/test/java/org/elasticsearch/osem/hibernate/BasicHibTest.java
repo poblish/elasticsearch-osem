@@ -4,50 +4,70 @@
  */
 package org.elasticsearch.osem.hibernate;
 
-import org.elasticsearch.osem.test.entities.interfaces.ActorIF;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import java.util.Locale;
-import org.elasticsearch.osem.test.entities.interfaces.ActorResourceIF;
-import org.elasticsearch.osem.test.entities.interfaces.BlogIF;
 import javax.persistence.EntityManager;
-import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
-import org.compass.core.config.CompassSettings;
-import org.elasticsearch.osem.test.entities.impl.Actor;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.osem.core.ObjectContext;
-import org.elasticsearch.osem.core.ObjectContextFactory;
-import org.elasticsearch.osem.test.entities.impl.Blog;
-import org.elasticsearch.osem.test.entities.impl.Feed;
-import org.elasticsearch.osem.test.entities.impl.TestArticle;
-import org.testng.annotations.Test;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import org.compass.core.Compass;
+import org.compass.core.config.CompassSettings;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.gps.CompassGps;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.impl.SingleCompassGps;
+import org.elasticsearch.osem.core.ObjectContext;
+import org.elasticsearch.osem.core.ObjectContextFactory;
+import org.elasticsearch.osem.test.entities.impl.Actor;
+import org.elasticsearch.osem.test.entities.impl.Blog;
+import org.elasticsearch.osem.test.entities.impl.Feed;
+import org.elasticsearch.osem.test.entities.impl.TestArticle;
+import org.elasticsearch.osem.test.entities.interfaces.ActorIF;
+import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
+import org.elasticsearch.osem.test.entities.interfaces.BlogIF;
+import org.elasticsearch.osem.test.entities.interfaces.FeedIF;
 import org.hibernate.Session;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 import static org.easymock.EasyMock.*;
 import static org.powermock.api.easymock.PowerMock.createMock;
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  *
  * @author andrewregan
  */
-// @RunWith(PowerMockRunner.class)
 public class BasicHibTest
 {
-	private final static String	INDEX = "AbstractArticle".toLowerCase();
+	private static Client		s_Client;
 
+	private static final ESLogger	m_Logger = Loggers.getLogger( BasicHibTest.class );
+
+	/****************************************************************************
+	****************************************************************************/
+	@BeforeMethod
+	public void setUp()
+	{
+		s_Client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.107", 9300));
+
+		// Clear down...
+
+		s_Client.prepareDeleteByQuery("actor", "blog", "feed", "testarticle").setQuery( matchAllQuery() ).execute().actionGet();
+	}
+    
+	/****************************************************************************
+	****************************************************************************/
 	@Test
 	public void basicTest()
 	{
-		Client client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.107", 9300));
+		m_Logger.debug( "*** Using: " + s_Client + " / " + ((TransportClient) s_Client).connectedNodes());
 
 		//////////////////////////////////////////////////////////////////////////////////////
-
-	//	client.prepareDeleteByQuery(INDEX).execute().actionGet();
 
 		final ObjectContext	theCtxt = ObjectContextFactory.create();
 
@@ -70,6 +90,7 @@ public class BasicHibTest
 
 		expect( theCompass.getSettings() ).andReturn(theCompassSettings).atLeastOnce();
 		expect( theCompass.getObjectContext() ).andReturn(theCtxt).atLeastOnce();
+		expect( theCompass.getClient() ).andReturn(s_Client).atLeastOnce();
 
 		replay(theCompass);
 
@@ -98,12 +119,14 @@ public class BasicHibTest
 
 		final ActorIF		theActor = new Actor( "aregan", "Andrew", "Regan", "", null);
 		final BlogIF		theBlog = new Blog( theActor, "http://www.poblish.org/blog/", Locale.UK);
-		final ActorResourceIF	theFeed = new Feed( theBlog, "http://www.poblish.org/blog/", "desc", false, Locale.UK);
+		final FeedIF		theFeed = new Feed( theBlog, "http://www.poblish.org/blog/", "desc", false, Locale.UK);
 
 		if (!theEM.getTransaction().isActive())
 		{
 			theEM.getTransaction().begin();
 		}
+
+		m_Logger.debug( "*** Persisting...");
 
 		theEM.persist(theFeed);
 
@@ -112,18 +135,82 @@ public class BasicHibTest
 		theEM.persist(theArticle);
 		theEM.flush();
 		theEM.getTransaction().commit();
+		theEM.clear();
 
 		//////////////////////////////////////////////////////////////////////////////////////
 
-//		final IndexResponse	theResponse = client.prepareIndex( INDEX, "xxx", "1980")
-//							    .setSource( theCtxt.write(theArticle) )
-//							    .execute()
-//							    .actionGet();
+		final ActorIF		theLoadedActor = theEM.createQuery("FROM Actor WHERE userName='aregan'", Actor.class).getSingleResult();
+		final BlogIF		theLoadedBlog = theEM.createQuery("FROM Blog WHERE url='http://www.poblish.org/blog/'", Blog.class).getSingleResult();
+		final FeedIF		theLoadedFeed = theEM.createQuery("FROM Feed WHERE url='http://www.poblish.org/blog/'", Feed.class).getSingleResult();
 
-//		log.debug("theResp = " + theResponse + " / " + theResponse.id());
+		Assert.assertNotNull( theLoadedActor.getId() );
+		Assert.assertNotNull( theLoadedBlog.getId() );
+		Assert.assertNotNull( theLoadedFeed.getId() );
 
 		//////////////////////////////////////////////////////////////////////////////////////
 
-		client.close();
+		m_Logger.debug( "*** Refreshing...");
+
+		s_Client.admin().indices().prepareRefresh("actor").execute().actionGet();
+		s_Client.admin().indices().prepareRefresh("blog").execute().actionGet();
+		s_Client.admin().indices().prepareRefresh("feed").execute().actionGet();
+
+		m_Logger.debug( "*** Searching...");
+
+		final SearchResponse	theActorResp = s_Client.prepareSearch("actor").setQuery( idsQuery("xxx").addIds( String.valueOf( theLoadedActor.getId() ) ) ).execute().actionGet();
+
+		Assert.assertEquals( theActorResp.getHits().totalHits(), 1, "Wrong number of Actors (#1) for Id #" + theLoadedActor.getId());
+
+		final SearchResponse	theBlogResp = s_Client.prepareSearch("blog").setQuery( idsQuery("xxx").addIds( String.valueOf( theLoadedBlog.getId() ) ) ).execute().actionGet();
+
+		Assert.assertEquals( theBlogResp.getHits().totalHits(), 1, "Wrong number of Blogs (#1) for Id #" + theLoadedBlog.getId());
+
+		final SearchResponse	theFeedResp = s_Client.prepareSearch("feed").setQuery( idsQuery("xxx").addIds( String.valueOf( theLoadedFeed.getId() ) ) ).execute().actionGet();
+
+		Assert.assertEquals( theFeedResp.getHits().totalHits(), 1, "Wrong number of Feeds (#1) for Id #" + theLoadedFeed.getId());
+
+		//////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////
+
+		theEM.getTransaction().begin();
+
+		m_Logger.debug( "*** Removing...");
+
+		theEM.remove(theLoadedActor);
+		theEM.flush();
+		theEM.getTransaction().commit();
+
+		Assert.assertTrue( theEM.createQuery("FROM Actor WHERE userName='aregan'", Actor.class).getResultList().isEmpty() );
+
+		s_Client.admin().indices().prepareRefresh("actor").execute().actionGet();
+
+		final SearchResponse	theActorResp2 = s_Client.prepareSearch("actor").setQuery( matchAllQuery() ).execute().actionGet();
+
+		Assert.assertEquals( theActorResp2.getHits().totalHits(), 0, "Wrong number of Actors #2");
+
+		//////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////
+
+		theEM.getTransaction().begin();
+		theEM.remove(theLoadedFeed);
+		theEM.flush();
+		theEM.getTransaction().commit();
+
+		Assert.assertTrue( theEM.createQuery("FROM Feed WHERE url='http://www.poblish.org/blog/'", Feed.class).getResultList().isEmpty() );
+
+		s_Client.admin().indices().prepareRefresh("feed").execute().actionGet();
+
+		final SearchResponse	theFeedResp2 = s_Client.prepareSearch("feed").setQuery( matchAllQuery() ).execute().actionGet();
+
+		Assert.assertEquals( theFeedResp2.getHits().totalHits(), 0, "Wrong number of Feeds #2");
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@AfterMethod
+	public void tearDown()
+	{
+		s_Client.close();
 	}
 }
