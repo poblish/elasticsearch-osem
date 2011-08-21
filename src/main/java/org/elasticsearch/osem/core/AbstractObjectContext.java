@@ -65,6 +65,12 @@ public abstract class AbstractObjectContext implements ObjectContext {
     }
 
     @Override
+    public String getAttributeId(Object object) throws ObjectContextMappingException {
+        check(object.getClass());
+        return mapper.getAttributeId(object);
+    }
+
+    @Override
     public void setId(Object object, String id) throws ObjectContextMappingException {
         check(object.getClass());
         mapper.setId(object, id);

@@ -31,6 +31,8 @@ public interface ObjectContextMapper {
 
     String getId(Object object) throws ObjectContextMappingException;
 
+    String getAttributeId(Object object) throws ObjectContextMappingException;	// (AGR) The object's Id attribute, not the ES _id property
+
     XContentBuilder getMapping(Class<?> clazz) throws ObjectContextMappingException;
 
     String getType(Class<?> clazz);

@@ -96,11 +96,20 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
 
     @Override
     public String getId(Object object) {
-        PropertyDescriptor property = attributes.getProperty(object.getClass(), "_id");
+       return getPropertyByName( object, "_id");
+    }
+
+    @Override
+    public String getAttributeId(Object object) {
+       return getPropertyByName( object, "id");
+    }
+
+    private String getPropertyByName(Object object, final String inName) {
+        PropertyDescriptor property = attributes.getProperty(object.getClass(), inName);
         if (property != null) {
             Exception exception = null;
             try {
-                return (String) property.getReadMethod().invoke(object);
+                return String.valueOf( property.getReadMethod().invoke(object) );    // (AGR) String.valueOf(...) much better
             } catch (IllegalArgumentException e) {
                 exception = e;
             } catch (IllegalAccessException e) {
