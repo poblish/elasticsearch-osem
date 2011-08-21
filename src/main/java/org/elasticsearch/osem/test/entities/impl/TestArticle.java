@@ -49,14 +49,14 @@ public class TestArticle implements ArticleIF, Serializable
 	private static final long serialVersionUID = 1L;
 
 	@Id
-//	@SearchableId(name=ARTICLE_ID)
+	@Indexable
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name=ARTICLE_ID)
 	protected Long				id;
 
 	@ManyToOne( cascade={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH}, targetEntity=Blog.class)
 	@JoinColumn(name="blogId")
-	@Indexable	// @SearchableComponent
+	@Indexable
 	protected BlogIF			m_Blog;
 
 	@Column(name="title")
@@ -77,50 +77,9 @@ public class TestArticle implements ArticleIF, Serializable
 	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
 	protected Calendar			m_PublishDate = Calendar.getInstance( TimeZone.getTimeZone("UTC") );
 
-	////////////////////////////////////////////////////////////////////////////////////
-/*
-	@ManyToMany(targetEntity=Category.class, fetch=FetchType.LAZY, cascade={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH})
-	@LazyCollection(LazyCollectionOption.EXTRA)
-	@JoinTable(name="ArticleCategories")
-	@Indexable	// @SearchableComponent
-	protected Collection<CategoryIF>	m_Categories = new HashSet<CategoryIF>();
-
-	@ManyToMany(targetEntity=Tag.class, fetch=FetchType.LAZY, cascade={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH})
-	@LazyCollection(LazyCollectionOption.EXTRA)
-	@JoinTable(name="ArticleTags")
-	@Indexable	// @SearchableComponent
-	protected Collection<TagIF>		m_Tags = new HashSet<TagIF>();
-
-	////////////////////////////////////////////////////////////////////////////////////
-
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, targetEntity=AbstractFlag.class)
-	@LazyCollection(LazyCollectionOption.EXTRA)
-	@Cascade(value=org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-	private Collection<FlagIF>		m_Flags = new HashSet<FlagIF>();
-
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, targetEntity=ArticleVersion.class)
-	@Cascade(value=org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-	@Indexable	// @SearchableReference
-	private Collection<ArticleVersionIF>	m_Versions = new HashSet<ArticleVersionIF>();
-
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, targetEntity=ArticleRating.class)
-	@Cascade(value=org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-	private Collection<ArticleRatingIF>	m_Ratings = new HashSet<ArticleRatingIF>();
-
-	@ManyToMany( fetch=FetchType.LAZY, targetEntity=Jurisdiction.class)
-	@JoinTable(name="ArticleJurisdictions")
-	private Collection<JurisdictionIF>	m_Jurisdictions = new HashSet<JurisdictionIF>();
-*/
-	////////////////////////////////////////////////////////////////////////////////////
-
 	@Column(name=ARTICLE_SEMANTICALLY_ANALYSED,columnDefinition="TINYINT(1) DEFAULT 0",nullable=false)
 	private boolean				m_SemanticallyAnalysed = false;
-/*
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, targetEntity=DefaultTopicResult.class)
-	@Cascade(value=org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-	@Indexable	// @SearchableComponent
-	private Set<TopicResultIF>		m_SemanticTopicResults = new HashSet<TopicResultIF>();
-*/
+
 	////////////////////////////////////////////////////////////////////////////////////
 
 	@Column(name="readCount",columnDefinition="MEDIUMINT DEFAULT 0",nullable=false)
