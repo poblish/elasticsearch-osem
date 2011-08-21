@@ -20,6 +20,7 @@ import java.io.Serializable;
 import javax.naming.Referenceable;
 
 import org.compass.core.config.CompassSettings;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.osem.core.ObjectContext;
 
 /**
@@ -42,7 +43,9 @@ import org.elasticsearch.osem.core.ObjectContext;
  */
 public interface Compass extends Referenceable, Serializable {
 
-	ObjectContext	getObjectContext();
+	ObjectContext getObjectContext();
+
+	Client getClient();
 
     /**
      * If there is a transaction bound session, will return it. Otherwise

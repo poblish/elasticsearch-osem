@@ -155,7 +155,7 @@ public class SingleCompassGps extends AbstractCompassGps {
 
     public void executeForMirror( CompassCallback callback) throws CompassException
     {
-	final CompassSession	theSsn = new ElasticSearchSession( compass.getObjectContext() );
+	final CompassSession	theSsn = new ElasticSearchSession( compass.getObjectContext(), compass.getClient());
 
 	log.trace("executeForMirror() theSsn = " + theSsn);
 

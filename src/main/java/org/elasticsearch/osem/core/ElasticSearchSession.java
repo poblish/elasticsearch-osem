@@ -8,12 +8,11 @@ import org.compass.core.CompassException;
 import org.compass.core.CompassSearchSession;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassSettings;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 /**
  *
@@ -28,11 +27,11 @@ public class ElasticSearchSession implements CompassSession
 
 	/****************************************************************************
 	****************************************************************************/
-	public ElasticSearchSession( final ObjectContext inCtxt)
+	public ElasticSearchSession( final ObjectContext inCtxt, final Client inClient)
 	{
 		m_Ctxt = inCtxt;
 
-		m_Client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.107", 9300));	// FIXME!
+		m_Client = inClient;	// new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.107", 9300));	// FIXME!
 	}
 
 	/****************************************************************************
@@ -67,9 +66,7 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void create( final Object inEntity) throws CompassException
 	{
-		final CompassSession	theSsn = new ElasticSearchSession(m_Ctxt);
-
-		logger.debug("create() theSsn = " + theSsn);
+		logger.debug("create() theSsn = " + this);
 
 		String		theId = m_Ctxt.getId(inEntity);
 
@@ -90,7 +87,7 @@ public class ElasticSearchSession implements CompassSession
 								.execute()
 								.actionGet();
 
-		logger.debug("create() DONE: " + inEntity);
+		logger.debug("create() DONE: " + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
 	}
 
 	/****************************************************************************
@@ -99,9 +96,7 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void save( final Object inEntity) throws CompassException
 	{
-		final CompassSession	theSsn = new ElasticSearchSession(m_Ctxt);
-
-		logger.debug("save() theSsn = " + theSsn);
+		logger.debug("save() theSsn = " + this);
 
 		String		theId = m_Ctxt.getId(inEntity);
 
@@ -122,7 +117,39 @@ public class ElasticSearchSession implements CompassSession
 								.execute()
 								.actionGet();
 
-		logger.debug("save() DONE: " + inEntity);
+		logger.debug("save() DONE: " + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
+	}
+
+	/****************************************************************************
+	 * FIXME: largely copy/paste from create()
+	****************************************************************************/
+	@Override
+	public void delete( final Object inEntity) throws CompassException
+	{
+		logger.debug("delete() theSsn = " + this);
+
+		String		theId = m_Ctxt.getId(inEntity);
+
+		if ( theId == null)
+		{
+			theId = m_Ctxt.getAttributeId(inEntity);
+
+			if ( theId == null)
+			{
+				throw new RuntimeException("Null Id - cannot continue.");
+			}
+		}
+
+		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
+
+		final DeleteResponse	theResponse = m_Client.prepareDelete( theIdx.toLowerCase(), "xxx", theId).execute().actionGet();
+
+		if (theResponse.notFound())
+		{
+			throw new RuntimeException("Could not find " + theIdx + " #" + theId + " to delete");
+		}
+
+		logger.debug("delete() DONE: " + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
 	}
 
 	/****************************************************************************
@@ -186,7 +213,7 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void close() throws CompassException
 	{
-		m_Client.close();
+		// (AGR) No, don't bloody do this... well, not unless we have some kind of pool of Clients...  m_Client.close();
 	}
 
 	@Override
@@ -263,12 +290,6 @@ public class ElasticSearchSession implements CompassSession
 
 	@Override
 	public void flushCommit(String... aliases) throws CompassException
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
-	public void delete(Object obj) throws CompassException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
