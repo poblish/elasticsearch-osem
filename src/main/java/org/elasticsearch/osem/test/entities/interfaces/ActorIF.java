@@ -10,5 +10,6 @@ package org.elasticsearch.osem.test.entities.interfaces;
  */
 public interface ActorIF
 {
+	Long getId();
 	String getUserName();
 }

@@ -10,4 +10,5 @@ package org.elasticsearch.osem.test.entities.interfaces;
  */
 public interface ActorResourceIF
 {
+	Long getId();
 }
