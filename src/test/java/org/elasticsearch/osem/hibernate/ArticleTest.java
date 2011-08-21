@@ -4,6 +4,8 @@
  */
 package org.elasticsearch.osem.hibernate;
 
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
 import org.elasticsearch.osem.test.entities.impl.Actor;
 import org.elasticsearch.osem.test.entities.impl.Blog;
@@ -35,6 +37,8 @@ public class ArticleTest
 {
 	private final static String	INDEX = "AbstractArticle".toLowerCase();
 
+	private static final ESLogger	m_Logger = Loggers.getLogger( ArticleTest.class );
+
 	/****************************************************************************
 	****************************************************************************/
 	@Test
@@ -60,11 +64,11 @@ public class ArticleTest
 		//	final SearchRequest	sr = Requests.searchRequest(INDEX);
 			final SearchResponse	theResp = client.prepareSearch(INDEX).setQuery(theIdQB).execute().actionGet( 5, TimeUnit.SECONDS);
 
-			System.out.println("Found = " + theResp);
+			m_Logger.debug("Found = " + theResp);
 		}
 		catch (ElasticSearchException e)    // Index doesn't exist
 		{
-			System.out.println(e);
+			m_Logger.error("", e);
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +90,7 @@ public class ArticleTest
 							    .execute()
 							    .actionGet();
 
-		System.out.println("theResp = " + theResponse + " / " + theResponse.id());
+		m_Logger.debug("theResp = " + theResponse + " / " + theResponse.id());
 
 		//////////////////////////////////////////////////////////////////////////////////////
 

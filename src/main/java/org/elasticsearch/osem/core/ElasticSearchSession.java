@@ -11,6 +11,8 @@ import org.compass.core.config.CompassSettings;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 /**
@@ -21,6 +23,8 @@ public class ElasticSearchSession implements CompassSession
 {
 	private final ObjectContext	m_Ctxt;
 	private final Client		m_Client;
+
+	private static final ESLogger	logger = Loggers.getLogger( ElasticSearchSession.class );
 
 	/****************************************************************************
 	****************************************************************************/
@@ -65,10 +69,10 @@ public class ElasticSearchSession implements CompassSession
 	{
 		final CompassSession	theSsn = new ElasticSearchSession(m_Ctxt);
 
-		System.out.println("create() theSsn = " + theSsn);
+		logger.debug("create() theSsn = " + theSsn);
 
 		String		theId = m_Ctxt.getId(inEntity);
-		
+
 		if ( theId == null)
 		{
 			theId = m_Ctxt.getAttributeId(inEntity);
@@ -86,7 +90,7 @@ public class ElasticSearchSession implements CompassSession
 								.execute()
 								.actionGet();
 
-		System.out.println("create() DONE: " + inEntity);
+		logger.debug("create() DONE: " + inEntity);
 	}
 
 	/****************************************************************************
@@ -97,10 +101,10 @@ public class ElasticSearchSession implements CompassSession
 	{
 		final CompassSession	theSsn = new ElasticSearchSession(m_Ctxt);
 
-		System.out.println("save() theSsn = " + theSsn);
+		logger.debug("save() theSsn = " + theSsn);
 
 		String		theId = m_Ctxt.getId(inEntity);
-		
+
 		if ( theId == null)
 		{
 			theId = m_Ctxt.getAttributeId(inEntity);
@@ -118,7 +122,7 @@ public class ElasticSearchSession implements CompassSession
 								.execute()
 								.actionGet();
 
-		System.out.println("save() DONE: " + inEntity);
+		logger.debug("save() DONE: " + inEntity);
 	}
 
 	/****************************************************************************
@@ -291,5 +295,5 @@ public class ElasticSearchSession implements CompassSession
 	public void delete(Class clazz, Object... ids) throws CompassException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
-	}	
+	}
 }

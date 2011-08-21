@@ -86,7 +86,7 @@ public class BasicHibTest
 		final CompassGps		theCompassGps = new SingleCompassGps(theCompass);
 		theCompassGps.addGpsDevice(theDevice);
 
-		System.out.println("Starting Compass... " + theCompassGps);
+	//	log.debug("Starting Compass... " + theCompassGps);
 
 		theCompassGps.start();
 
@@ -120,7 +120,7 @@ public class BasicHibTest
 //							    .execute()
 //							    .actionGet();
 
-//		System.out.println("theResp = " + theResponse + " / " + theResponse.id());
+//		log.debug("theResp = " + theResponse + " / " + theResponse.id());
 
 		//////////////////////////////////////////////////////////////////////////////////////
 

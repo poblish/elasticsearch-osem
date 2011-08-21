@@ -49,7 +49,7 @@ import org.elasticsearch.osem.common.springframework.core.annotation.AnnotationU
 import org.elasticsearch.osem.core.ObjectContextException;
 
 /**
- * 
+ *
  * @author alois.cochard
  */
 
@@ -133,7 +133,7 @@ public class AttributeSourceImpl implements AttributeSource {
                     IndexableAttribute indexable = getIndexableAttribute(property);
                     if (indexable == null) {
                         if (searchable) {
-                            // Searchable class properties are implicitly Indexable 
+                            // Searchable class properties are implicitly Indexable
                             indexable = new IndexableAttributeImpl();
                         } else {
                             if (getSerializableAttribute(property) != null) {
@@ -171,7 +171,7 @@ public class AttributeSourceImpl implements AttributeSource {
                     SerializableAttribute serializable = getSerializableAttribute(property);
                     if (serializable == null) {
                         if (searchable) {
-                            // Searchable class properties are implicitly Serializable 
+                            // Searchable class properties are implicitly Serializable
                             serializable = new SerializableAttributeImpl();
                         } else {
                             if (getIndexableAttribute(property) != null) {
@@ -225,15 +225,15 @@ public class AttributeSourceImpl implements AttributeSource {
 		    name = null;
 		}
                 name = name == null ? property.getName() : name;
- 
+
 		final PropertyDescriptor	theCurrProperty = properties.get(name);
 
 		if ( theCurrProperty != null && ( property.getReadMethod() == null && property != null)) {
-			// System.out.println( ":: SKIP BAD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
+			// logger.trace( ":: SKIP BAD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
 			continue;
 		}
 
-		System.out.println( ":: FOR " + clazz + ", ADD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
+		logger.trace( ":: FOR " + clazz + ", ADD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
 
 		properties.put(name, property);
             }
