@@ -213,12 +213,17 @@ public class AttributeSourceImpl implements AttributeSource {
         Map<String, PropertyDescriptor> properties = classProperties.get(clazz);
         if (properties == null) {
             properties = new HashMap<String, PropertyDescriptor>();
-            for (PropertyDescriptor property : getPropertyDescriptors(clazz)) {
-                String name = null;
+
+	    final Collection<PropertyDescriptor>	thePropDescriptors = getPropertyDescriptors(clazz);
+
+            for (PropertyDescriptor property : thePropDescriptors) {
+                String name;
                 IndexableAttribute attribute = getIndexableAttribute(property);
                 if (attribute != null && attribute.getIndexName() != null) {
                     name = attribute.getIndexName();
-                }
+                } else {
+		    name = null;
+		}
                 name = name == null ? property.getName() : name;
  
 		final PropertyDescriptor	theCurrProperty = properties.get(name);
@@ -227,6 +232,8 @@ public class AttributeSourceImpl implements AttributeSource {
 			// System.out.println( ":: SKIP BAD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
 			continue;
 		}
+
+		System.out.println( ":: FOR " + clazz + ", ADD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
 
 		properties.put(name, property);
             }
