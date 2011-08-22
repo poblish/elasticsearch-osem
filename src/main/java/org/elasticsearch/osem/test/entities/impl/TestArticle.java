@@ -399,4 +399,18 @@ public class TestArticle implements ArticleIF, Serializable
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override public String toString()
+	{
+		if ( id == null)
+		{
+			return "NEW TestArticle [title='" + m_Title + "']";
+		}
+
+		StringBuilder	sb = new StringBuilder();
+		sb.append("TestArticle #").append(id).append(" [title='").append(m_Title).append("']");
+		return sb.toString();
+	}
 }
