@@ -235,9 +235,9 @@ public abstract class HibernateEventListenerUtils {
             if (dependencies.remove(entity)) {
                 if (dependencies.isEmpty()) {
                     if (create) {
-                        ElasticSearchSession.createEntity( session, pending);
+                        session.create(pending);
                     } else {
-                        ElasticSearchSession.saveEntity( session, pending);
+                        session.save(pending);
                     }
                     iter.remove();
                 }

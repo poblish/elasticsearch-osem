@@ -23,12 +23,11 @@ import java.util.Properties;
 import org.compass.core.Compass;
 import org.compass.core.CompassCallback;
 import org.compass.core.CompassException;
-import org.compass.core.CompassSession;
+import org.compass.core.CompassTemplate;
 import org.compass.core.config.CompassSettings;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.IndexPlan;
-import org.elasticsearch.osem.core.ElasticSearchSession;
 
 /**
  * <p>A {@link org.compass.gps.CompassGps} implementation that holds a
@@ -41,7 +40,7 @@ public class SingleCompassGps extends AbstractCompassGps {
 
     private Compass compass;
 
-// (AGR_OSEM) ... private CompassTemplate compassTemplate;
+    private CompassTemplate compassTemplate;
 
     private volatile Compass indexCompass;
 
@@ -88,8 +87,10 @@ public class SingleCompassGps extends AbstractCompassGps {
         // no need to async load the cache
         indexCompassSettings.setBooleanSetting(LuceneEnvironment.SearchEngineIndex.CACHE_ASYNC_INVALIDATION, false);
         indexCompassSettings.setBooleanSetting(CompassEnvironment.Transaction.DISABLE_AUTO_JOIN_SESSION, true);
+*/
         this.compassTemplate = new CompassTemplate(compass);
 
+/* (AGR_OSEM)
         // add a rebuild listener
         ((InternalCompass) compass).addRebuildEventListener(new RebuildEventListener() {
             public void onCompassRebuild(Compass compass) {
@@ -155,13 +156,7 @@ public class SingleCompassGps extends AbstractCompassGps {
 
     public void executeForMirror( CompassCallback callback) throws CompassException
     {
-	final CompassSession	theSsn = new ElasticSearchSession( compass.getObjectContext(), compass.getClient());
-
-	log.trace("executeForMirror() theSsn = " + theSsn);
-
-	callback.doInCompass(theSsn);
-
-	theSsn.close();
+	compassTemplate.execute(callback);
     }
 
     public boolean hasMappingForEntityForIndex(Class clazz) throws CompassException {

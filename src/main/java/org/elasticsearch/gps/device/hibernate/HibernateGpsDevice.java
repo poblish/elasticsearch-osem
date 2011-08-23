@@ -19,6 +19,7 @@ package org.elasticsearch.gps.device.hibernate;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.PassiveMirrorGpsDevice;
 import org.elasticsearch.gps.device.hibernate.entities.DefaultHibernateEntitiesLocator;
@@ -34,6 +35,7 @@ import org.elasticsearch.gps.device.support.parallel.IndexEntitiesIndexer;
 import org.elasticsearch.gps.device.support.parallel.IndexEntity;
 import org.elasticsearch.osem.common.springframework.util.Assert;
 import org.elasticsearch.osem.common.springframework.util.ClassUtils;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 /**
@@ -108,6 +110,11 @@ public class HibernateGpsDevice extends AbstractParallelGpsDevice implements Pas
     public HibernateGpsDevice(String name, SessionFactory sessionFactory) {
         setName(name);
         setSessionFactory(sessionFactory);
+    }
+
+    public HibernateGpsDevice(String name, final EntityManager inEM) {
+        setName(name);
+        setSessionFactory( ((Session) inEM.getDelegate()).getSessionFactory() );
     }
 
     protected void doStart() throws CompassGpsException {

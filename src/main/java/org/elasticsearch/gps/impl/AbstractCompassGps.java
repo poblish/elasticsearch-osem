@@ -16,12 +16,13 @@
 
 package org.elasticsearch.gps.impl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.compass.core.Compass;
 import org.compass.core.mapping.Cascade;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.gps.CompassGpsDevice;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.DefaultIndexPlan;
@@ -36,7 +37,7 @@ import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
  */
 public abstract class AbstractCompassGps implements CompassGpsInterfaceDevice {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected ESLogger log = Loggers.getLogger( getClass() );
 
     protected HashMap<String, CompassGpsDevice> devices = new HashMap<String, CompassGpsDevice>();
 
@@ -73,12 +74,23 @@ public abstract class AbstractCompassGps implements CompassGpsInterfaceDevice {
         }
     }
 
-    protected boolean hasMappingForEntity(Class clazz, Compass checkedCompass, Cascade cascade) {
-        // (AGR_OSEM) ... return ((InternalCompass) checkedCompass).getMapping().hasMappingForClass(clazz, cascade);
-	    return false;
+    protected boolean hasMappingForEntity(Class clazz, Compass checkedCompass, Cascade cascade)
+    {
+	final String	theTypeStr = checkedCompass.getObjectContext().getType(clazz);
+
+	// log.info("*** " + s + " for class: " + clazz + " / " + Arrays.toString( checkedCompass.getObjectContext().getTypes() ));
+
+	// return ((InternalCompass) checkedCompass).getMapping().hasMappingForClass(clazz, cascade);
+
+	return ( theTypeStr != null);
     }
 
-    protected boolean hasMappingForEntity(String name, Compass checkedCompass, Cascade cascade) {
+    protected boolean hasMappingForEntity(String name, Compass checkedCompass, Cascade cascade)
+    {
+	final String	s = "???";	// checkedCompass.getObjectContext().getType(name);
+
+	log.info("*** " + s + " for '" + name + "' / " + Arrays.toString( checkedCompass.getObjectContext().getTypes() ));;
+
         // (AGR_OSEM) ... return ((InternalCompass) checkedCompass).getMapping().hasMappingForAlias(name, cascade);
 	    return false;
     }

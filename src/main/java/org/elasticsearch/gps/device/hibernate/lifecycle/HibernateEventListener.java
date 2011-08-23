@@ -32,7 +32,6 @@ import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDeviceException;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
-import org.elasticsearch.osem.core.ElasticSearchSession;
 import org.hibernate.engine.CollectionEntry;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.event.EventSource;
@@ -193,7 +192,7 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
 
             compassGps.executeForMirror(new CompassCallbackWithoutResult() {
                 protected void doInCompassWithoutResult(CompassSession session) throws CompassException {
-                    ElasticSearchSession.deleteEntity( session, entity);
+                    session.delete(entity);
                 }
             });
         }
@@ -227,13 +226,13 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
                 if (!dependencies.isEmpty()) {
                     pendingCreate.put(entity, dependencies);
                 } else {
-                    ElasticSearchSession.createEntity( session, entity);
+                    session.create(entity);
                 }
             }
 
             HibernateEventListenerUtils.persistPending(session, entity, pendingCreate, true);
         } else {
-            ElasticSearchSession.createEntity( session, entity);
+            session.create(entity);
         }
         if (processCollections) {
             Collection<CollectionEntry> collectionsAfter = postInsertEvent.getSession().getPersistenceContext().getCollectionEntries().values();
@@ -258,13 +257,13 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
                 if (!dependencies.isEmpty()) {
                     pendingSave.put(entity, dependencies);
                 } else {
-                    ElasticSearchSession.saveEntity( session, entity);
+                    session.save(entity);
                 }
             }
 
             HibernateEventListenerUtils.persistPending(session, entity, pendingSave, false);
         } else {
-            ElasticSearchSession.saveEntity( session, entity);
+            session.save(entity);
         }
     }
 }

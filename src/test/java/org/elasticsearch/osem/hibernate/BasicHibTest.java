@@ -32,7 +32,6 @@ import org.elasticsearch.osem.test.entities.interfaces.ActorIF;
 import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
 import org.elasticsearch.osem.test.entities.interfaces.BlogIF;
 import org.elasticsearch.osem.test.entities.interfaces.FeedIF;
-import org.hibernate.Session;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import static org.easymock.EasyMock.*;
@@ -106,8 +105,7 @@ public class BasicHibTest
 
 		EntityManagerFactory	theEMF = Persistence.createEntityManagerFactory("OsemTestPU");
 		final EntityManager	theEM = theEMF.createEntityManager();
-		final Session		theHibSession = (Session) theEM.getDelegate();
-		HibernateGpsDevice	theDevice = new HibernateGpsDevice("Hib", theHibSession.getSessionFactory());
+		HibernateGpsDevice	theDevice = new HibernateGpsDevice("Hib", theEM);
 
 	//	theDevice.setIgnoreMirrorExceptions(true);
 		theDevice.setFetchCount(500);
@@ -129,10 +127,7 @@ public class BasicHibTest
 		final BlogIF		theBlog = new Blog( theActor, "http://www.poblish.org/blog/", Locale.UK);
 		final FeedIF		theFeed = new Feed( theBlog, "http://www.poblish.org/blog/", "desc", false, Locale.UK);
 
-		if (!theEM.getTransaction().isActive())
-		{
-			theEM.getTransaction().begin();
-		}
+		theEM.getTransaction().begin();
 
 		m_Logger.debug( "*** Persisting...");
 

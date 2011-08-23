@@ -30,35 +30,7 @@ public class ElasticSearchSession implements CompassSession
 	public ElasticSearchSession( final ObjectContext inCtxt, final Client inClient)
 	{
 		m_Ctxt = inCtxt;
-
-		m_Client = inClient;	// new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.107", 9300));	// FIXME!
-	}
-
-	/****************************************************************************
-	****************************************************************************/
-	public static void createEntity( final CompassSession inSsn, final Object inEntity)
-	{
-		final ElasticSearchSession	theESsn = (ElasticSearchSession) inSsn;	// (AGR) FIXME
-
-		theESsn.create(inEntity);
-	}
-
-	/****************************************************************************
-	****************************************************************************/
-	public static void saveEntity( final CompassSession inSsn, final Object inEntity)
-	{
-		final ElasticSearchSession	theESsn = (ElasticSearchSession) inSsn;	// (AGR) FIXME
-
-		theESsn.save(inEntity);
-	}
-
-	/****************************************************************************
-	****************************************************************************/
-	public static void deleteEntity( final CompassSession inSsn, final Object inEntity)
-	{
-		final ElasticSearchSession	theESsn = (ElasticSearchSession) inSsn;	// (AGR) FIXME
-
-		theESsn.delete(inEntity);
+		m_Client = inClient;
 	}
 
 	/****************************************************************************
