@@ -12,7 +12,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import org.compass.core.Compass;
-import org.compass.core.config.CompassSettings;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -32,10 +31,9 @@ import org.elasticsearch.osem.test.entities.interfaces.ActorIF;
 import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
 import org.elasticsearch.osem.test.entities.interfaces.BlogIF;
 import org.elasticsearch.osem.test.entities.interfaces.FeedIF;
+import org.elasticsearch.test.ElasticSearchTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import static org.easymock.EasyMock.*;
-import static org.powermock.api.easymock.PowerMock.createMock;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
@@ -83,23 +81,7 @@ public class BasicHibTest
 		theCtxt.add( Feed.class );
 		theCtxt.add( TestArticle.class );
 
-		//////////////////////////////////////////////////////////////////////////////////////
-
-		CompassSettings		theCompassSettings = createMock( CompassSettings.class );
-
-		expect( theCompassSettings.getClassLoader() ).andReturn( this.getClass().getClassLoader() ).atLeastOnce();
-
-		replay(theCompassSettings);
-
-		//////////////////////////////////////////////////////////////////////////////////////
-
-		Compass			theCompass = createMock( Compass.class );
-
-		expect( theCompass.getSettings() ).andReturn(theCompassSettings).atLeastOnce();
-		expect( theCompass.getObjectContext() ).andReturn(theCtxt).atLeastOnce();
-		expect( theCompass.getClient() ).andReturn(s_Client).atLeastOnce();
-
-		replay(theCompass);
+		final Compass		theCompass = ElasticSearchTests.mockCompass( s_Client, theCtxt);
 
 		//////////////////////////////////////////////////////////////////////////////////////
 
