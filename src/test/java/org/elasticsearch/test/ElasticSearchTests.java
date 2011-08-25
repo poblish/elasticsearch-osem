@@ -4,7 +4,11 @@
  */
 package org.elasticsearch.test;
 
+import org.elasticsearch.osem.core.ElasticSearchSession;
+import org.compass.core.CompassSession;
+import org.easymock.IAnswer;
 import org.compass.core.Compass;
+import org.compass.core.config.CompassEnvironment;
 import org.compass.core.config.CompassSettings;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -45,7 +49,8 @@ public class ElasticSearchTests
 	{
 	    final CompassSettings theCompassSettings = createMock( CompassSettings.class );
 
-	    expect( theCompassSettings.getClassLoader() ).andReturn( inCtxt.getClass().getClassLoader() ).atLeastOnce();
+	    expect( theCompassSettings.getClassLoader() ).andReturn( inCtxt.getClass().getClassLoader() ).anyTimes();
+	    expect( theCompassSettings.getSetting( CompassEnvironment.CONNECTION ) ).andReturn("/tmp").anyTimes();
 
 	    replay(theCompassSettings);
 
@@ -56,14 +61,24 @@ public class ElasticSearchTests
 	****************************************************************************/
 	public static Compass mockCompass( final Client inClient, final ObjectContext inCtxt, final CompassSettings inSettings)
 	{
-	    final Compass theCompass = createMock( Compass.class );
+		final Compass theCompass = createMock( Compass.class );
 
-	    expect( theCompass.getSettings() ).andReturn(inSettings).atLeastOnce();
-	    expect( theCompass.getObjectContext() ).andReturn(inCtxt).atLeastOnce();
-	    expect( theCompass.getClient() ).andReturn(inClient).atLeastOnce();
+		expect( theCompass.getSettings() ).andReturn(inSettings).atLeastOnce();
+		expect( theCompass.getObjectContext() ).andReturn(inCtxt).anyTimes();
+		expect( theCompass.getClient() ).andReturn(inClient).anyTimes();
+		expect( theCompass.openSession() ).andAnswer( new IAnswer<CompassSession>() {
 
-	    replay(theCompass);
+			public CompassSession answer() throws Throwable
+			{
+				return new ElasticSearchSession( inCtxt, inClient);
+			}
+		} ).anyTimes();
 
-	    return theCompass;
+		theCompass.close();
+		expectLastCall().atLeastOnce();
+
+		replay(theCompass);
+
+		return theCompass;
 	}
 }

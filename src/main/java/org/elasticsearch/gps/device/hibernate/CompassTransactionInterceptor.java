@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.compass.core.Compass;
-import org.compass.core.spi.InternalCompass;
 import org.compass.core.util.FieldInvoker;
 import org.hibernate.CallbackException;
 import org.hibernate.EntityMode;
@@ -56,7 +55,7 @@ public class CompassTransactionInterceptor implements Interceptor {
 
     private Interceptor interceptor;
 
-    private InternalCompass compass;
+    // private InternalCompass compass;
 
     private TransactionFactory transactionFactory;
 
@@ -70,7 +69,7 @@ public class CompassTransactionInterceptor implements Interceptor {
 
     public CompassTransactionInterceptor(Compass compass, boolean commitBeforeTransactionCompletion, Interceptor interceptor) {
         this.commitBeforeTransactionCompletion = commitBeforeTransactionCompletion;
-        this.compass = (InternalCompass) compass;
+        // (AGR_OSEM) ... this.compass = (InternalCompass) compass;
         this.interceptor = interceptor;
 
 /* (AGR_OSEM)

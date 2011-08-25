@@ -39,6 +39,7 @@ import org.elasticsearch.osem.pojo.users.EmailContact;
 import org.elasticsearch.osem.pojo.users.PhoneContact;
 import org.elasticsearch.osem.pojo.users.User;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.transport.RemoteTransportException;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
 import org.testng.annotations.AfterMethod;
@@ -83,8 +84,14 @@ public class ObjectContextIntegrationTest {
 
         context.add(Tweet.class);
 
-        // Create
-        node.client().admin().indices().prepareCreate("twitter").execute().actionGet();
+	try {
+		// Create
+		node.client().admin().indices().prepareCreate("twitter").execute().actionGet();
+	}
+	catch (RemoteTransportException e) {
+		// (AGR) Ignore 'Index already exists'
+	}
+
         // Mapping
         node.client().admin().indices().preparePutMapping("twitter").setSource(context.getMapping(Tweet.class)).execute().actionGet();
         // Add
@@ -123,8 +130,14 @@ public class ObjectContextIntegrationTest {
 
         context.add(User.class);
 
-        // Create
-        node.client().admin().indices().prepareCreate("users").execute().actionGet();
+	try {
+		// Create
+		node.client().admin().indices().prepareCreate("users").execute().actionGet();
+	}
+	catch (RemoteTransportException e) {
+		// (AGR) Ignore 'Index already exists'
+	}
+
         // Mapping
         node.client().admin().indices().preparePutMapping("users").setSource(context.getMapping(User.class)).execute().actionGet();
         // Add

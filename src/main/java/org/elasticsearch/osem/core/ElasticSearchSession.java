@@ -4,15 +4,20 @@
  */
 package org.elasticsearch.osem.core;
 
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.compass.core.CompassException;
+import org.compass.core.CompassHits;
 import org.compass.core.CompassSearchSession;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassSettings;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  *
@@ -127,6 +132,34 @@ public class ElasticSearchSession implements CompassSession
 	/****************************************************************************
 	****************************************************************************/
 	@Override
+	public <T> T load( final Class<T> inClazz, final Object inId) throws CompassException
+	{
+		final String		theIdx = inClazz.getSimpleName().toLowerCase();
+		final SearchResponse	theSearchResponse = m_Client.prepareSearch(theIdx).setQuery( idsQuery("xxx").addIds( String.valueOf(inId) ) ).execute().actionGet();
+		final SearchHits		theHits = theSearchResponse.getHits();
+
+		if (theHits.getTotalHits() == 0)
+		{
+			return null;	// FIXME - dumb?
+		}
+
+		final SearchHit		theHit = theHits.iterator().next();
+		final T			theObj = m_Ctxt.read( theHits.iterator().next() );
+
+		return theObj;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override
+	public <T> T get( final Class<T> inClazz, final Object inId) throws CompassException
+	{
+		return load( inClazz, inId);
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override
 	public void save(String alias, Object obj) throws CompassException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
@@ -207,12 +240,6 @@ public class ElasticSearchSession implements CompassSession
 	}
 
 	@Override
-	public <T> T get(Class<T> clazz, Object id) throws CompassException
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
 	public <T> T get(Class<T> clazz, Object... ids) throws CompassException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
@@ -226,12 +253,6 @@ public class ElasticSearchSession implements CompassSession
 
 	@Override
 	public Object get(String alias, Object... ids) throws CompassException
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
-	public <T> T load(Class<T> clazz, Object id) throws CompassException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
@@ -286,6 +307,12 @@ public class ElasticSearchSession implements CompassSession
 
 	@Override
 	public void delete(Class clazz, Object... ids) throws CompassException
+	{
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public CompassHits find(String query)
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

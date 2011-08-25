@@ -207,7 +207,7 @@ public class CompassTemplate implements CompassOperations {
             }
         });
     }
-
+*/
     public CompassHits find(final String query) throws CompassException {
         return execute(new CompassCallback<CompassHits>() {
             public CompassHits doInCompass(CompassSession session) throws CompassException {
@@ -215,6 +215,8 @@ public class CompassTemplate implements CompassOperations {
             }
         });
     }
+
+/* (AGR_OSEM) Do we need this stuff?
 
     public CompassDetachedHits findWithDetach(final String query) throws CompassException {
         return execute(new CompassCallback<CompassDetachedHits>() {

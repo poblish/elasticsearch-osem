@@ -26,7 +26,31 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.9</version>
+				<configuration>
+					<includes>
+						<include>**/*Test*.java</include>
+					</includes>
+					<additionalClasspathElements>
+						<additionalClasspathElement>src/test/java/</additionalClasspathElement>
+					</additionalClasspathElements>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.surefire</groupId>
+						<artifactId>surefire-testng</artifactId>
+						<version>2.9</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven.surefire</groupId>
+						<artifactId>surefire-junit3</artifactId>
+						<version>2.9</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -135,6 +159,41 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.17</version>
+		</dependency>
+
+		<!-- For old Compass Hib integration tests. Dunno what it does. -->
+
+		<dependency>
+			<groupId>org.ow2.jotm</groupId>
+			<artifactId>jotm-core</artifactId>
+			<version>2.2.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.cmi</groupId>
+			<artifactId>cmi-core-common</artifactId>
+			<version>2.2.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.cmi</groupId>
+			<artifactId>cmi-jndi</artifactId>
+			<version>2.2.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.0.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- For old Compass Hib integration tests. For javax.resource.spi.XATerminator -->
+		<dependency>
+			<groupId>javaee</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>5</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
