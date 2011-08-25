@@ -43,12 +43,12 @@ public class ObjectContextMapperImplTest extends AbstractObjectContextTest {
     }
 
     @Test
-    public void testAdd() {
+    public void doTestAdd() {
         mapper.add(User.class);
     }
 
     @Test
-    public void testGetMapping() throws ObjectContextMappingException, IOException {
+    public void doTestGetMapping() throws ObjectContextMappingException, IOException {
         mapper.add(User.class);
         // TODO [acochard] improve polymorphism handling
         String expected = "{\"user\":{\"properties\":{\"_class\":{\"type\":\"string\",\"include_in_all\":false},\"_id\":{\"type\":\"string\"},\"contacts\":{\"properties\":{\"_class\":{\"type\":\"string\",\"include_in_all\":false}}},\"name\":{\"type\":\"string\"}}}}";
@@ -56,7 +56,7 @@ public class ObjectContextMapperImplTest extends AbstractObjectContextTest {
     }
 
     @Test
-    public void testIsRegistred() {
+    public void doTestIsRegistred() {
         mapper.add(User.class);
         AssertJUnit.assertTrue(mapper.isRegistred(User.class));
         AssertJUnit.assertTrue(mapper.isRegistred(Contact.class));
