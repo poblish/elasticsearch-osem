@@ -21,11 +21,12 @@ import javax.naming.InitialContext;
 
 import org.compass.core.Compass;
 import org.compass.core.CompassTemplate;
-import org.compass.core.config.CompassConfiguration;
-import org.compass.core.config.CompassEnvironment;
 import org.compass.core.util.FileHandlerMonitor;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.impl.SingleCompassGps;
+import org.elasticsearch.osem.core.ObjectContext;
+import org.elasticsearch.osem.core.ObjectContextFactory;
+import org.elasticsearch.test.ElasticSearchTests;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -69,10 +70,17 @@ public class CollectionTests {
         Context ctx = new InitialContext();
         ctx.rebind("java:comp/UserTransaction", jotm.getUserTransaction());
 
-        CompassConfiguration cpConf = new CompassConfiguration()
-                .configure("/org/compass/gps/device/hibernate/collection/compass.cfg.xml");
-        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
-        compass = cpConf.buildCompass();
+	final ObjectContext	theObjectContext = ObjectContextFactory.create();
+
+	theObjectContext.add( Child.class );
+	theObjectContext.add( Parent.class );
+
+//        CompassConfiguration cpConf = new CompassConfiguration()
+//                .configure("/org/compass/gps/device/hibernate/collection/compass.cfg.xml");
+//        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
+//        compass = cpConf.buildCompass();
+
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();

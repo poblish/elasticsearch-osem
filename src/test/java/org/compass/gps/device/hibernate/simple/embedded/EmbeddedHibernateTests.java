@@ -15,9 +15,9 @@ public class EmbeddedHibernateTests extends ScrollableSimpleHibernateGpsDeviceTe
         return "/org/compass/gps/device/hibernate/simple/embedded/hibernate.cfg.xml";
     }
 
-    protected void setUpCompass() {
-        // (AGR_OSEM) ... compass = HibernateHelper.getCompass(sessionFactory);
-    }
+//    protected void setUpCompass() {
+//        compass = HibernateHelper.getCompass(sessionFactory);
+//    }
 
     protected void setUpGpsDevice() {
         super.setUpGpsDevice();

@@ -18,7 +18,6 @@ package org.compass.gps.impl;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
 import org.compass.core.Compass;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassConfiguration;
@@ -26,12 +25,19 @@ import org.compass.core.config.CompassEnvironment;
 import org.compass.core.lucene.LuceneEnvironment;
 import org.compass.gps.device.MockIndexGpsDevice;
 import org.compass.gps.device.MockIndexGpsDeviceObject;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.gps.impl.SingleCompassGps;
+import org.elasticsearch.osem.core.ObjectContext;
+import org.elasticsearch.osem.core.ObjectContextFactory;
+import org.elasticsearch.test.ElasticSearchTests;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * @author kimchy
  */
-public class SingleCompassGpsIndexTests extends TestCase {
+public class SingleCompassGpsIndexTests {
 
     private Compass compass;
 
@@ -39,13 +45,18 @@ public class SingleCompassGpsIndexTests extends TestCase {
 
     private MockIndexGpsDevice device;
 
-    public void testSimpleIndex()
+    @Test
+    public void doTestSimpleIndex()
     {
-        CompassConfiguration conf = new CompassConfiguration();
-        // (AGR_OSEM) ... conf.setSetting(CompassEnvironment.CONNECTION, "target/test-index");
-        // (AGR_OSEM) ... conf.addClass(MockIndexGpsDeviceObject.class);
-        conf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
-        compass = conf.buildCompass();
+	final ObjectContext	theObjectContext = ObjectContextFactory.create();
+
+//        CompassConfiguration conf = new CompassConfiguration();
+//        conf.setSetting(CompassEnvironment.CONNECTION, "target/test-index");
+//        conf.addClass(MockIndexGpsDeviceObject.class);
+//        conf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
+//        compass = conf.buildCompass();
+
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// cpConf.buildCompass();
 
         device = new MockIndexGpsDevice();
         device.setName("test");
@@ -56,7 +67,7 @@ public class SingleCompassGpsIndexTests extends TestCase {
         // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
         // (AGR_OSEM) ... compass.getSearchEngineIndexManager().createIndex();
 
-        assertNoObjects();
+        assertNoObjects( compass.getClient() );
 
         device.add(new Long(1), "testvalue");
         compassGps.index();
@@ -67,7 +78,8 @@ public class SingleCompassGpsIndexTests extends TestCase {
         compass.close();
     }
 
-    public void testWithPropertiesForSingleCompassGps()
+    @Test
+    public void doTestWithPropertiesForSingleCompassGps()
     {
         CompassConfiguration conf = new CompassConfiguration();
         // (AGR_OSEM) ... conf.setSetting(CompassEnvironment.CONNECTION, "target/test-index");
@@ -87,7 +99,7 @@ public class SingleCompassGpsIndexTests extends TestCase {
         compassGps.setIndexSettings(props);
         compassGps.start();
 
-        assertNoObjects();
+        assertNoObjects( compass.getClient() );
 
         device.add(new Long(1), "testvalue");
         compassGps.index();
@@ -98,7 +110,7 @@ public class SingleCompassGpsIndexTests extends TestCase {
         compass.close();
     }
 
-    private void assertExists(Long id) {
+    private void assertExists( Long id) {
         CompassSession session = compass.openSession();
         // (AGR_OSEM) ... CompassTransaction tr = session.beginTransaction();
         session.load(MockIndexGpsDeviceObject.class, id);
@@ -106,10 +118,12 @@ public class SingleCompassGpsIndexTests extends TestCase {
         session.close();
     }
 
-    private void assertNoObjects() {
+    private void assertNoObjects( Client inClient) {
         CompassSession session = compass.openSession();
         // (AGR_OSEM) ... CompassTransaction tr = session.beginTransaction();
-        // (AGR_OSEM) ... assertEquals(0, session.queryBuilder().matchAll().hits().length());
+	
+        Assert.assertEquals( inClient.prepareSearch("FIXME").setQuery( matchAllQuery() ).execute().actionGet().getHits().getTotalHits(), 0);
+
         // (AGR_OSEM) ... tr.commit();
         session.close();
     }

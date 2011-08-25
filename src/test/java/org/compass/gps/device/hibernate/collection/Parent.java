@@ -19,14 +19,19 @@ package org.compass.gps.device.hibernate.collection;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import org.elasticsearch.osem.annotations.Indexable;
+import org.elasticsearch.osem.annotations.Searchable;
 
 /**
  * @author kimchy
  */
-public class Parent implements Serializable {
+public class Parent implements Serializable
+{
+    private static final long serialVersionUID = 1L;
 
     private Long id;
 
+    @Indexable
     private String value;
 
     private Set childs = new HashSet();

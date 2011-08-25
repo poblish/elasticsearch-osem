@@ -26,4 +26,14 @@ public class A {
     String value1;
 
     String value2;
+
+    // (AGR) 25 August 2011
+    public Long getId() {
+	    return id;
+    }
+
+    // (AGR) 25 August 2011
+    public void setId( Long x) {
+	    id = x;
+    }
 }

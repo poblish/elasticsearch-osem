@@ -212,7 +212,7 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void commit() throws CompassException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		// (AGR) (Deliberately) does nothing.
 	}
 
 	@Override
@@ -314,6 +314,6 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public CompassHits find(String query)
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException("find('" + query + "')");
 	}
 }
