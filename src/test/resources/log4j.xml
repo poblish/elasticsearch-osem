@@ -10,7 +10,14 @@
 		</layout>
 	</appender>
 
-	
+	<logger name="org.hibernate.gps" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="CONSOLE" />
+	</logger>
+	<logger name="org.hibernate" additivity="false">
+		<level value="WARN"/>
+		<appender-ref ref="CONSOLE" />
+	</logger>
 	<root>
 		<level value="DEBUG" />
 		<appender-ref ref="CONSOLE" />
