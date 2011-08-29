@@ -50,7 +50,7 @@ public class ObjectContextImplTest {
     }
 
     @Test
-    public void testSimple() throws ObjectContextSerializationException, IOException {
+    public void doTestSimple() throws ObjectContextSerializationException, IOException {
         Tweet tweet = new Tweet();
         tweet.setUser("aloiscochard");
         tweet.setMessage("#ElasticSearch: You know, for search !");
@@ -70,7 +70,7 @@ public class ObjectContextImplTest {
     }
 
     @Test
-    public void testPolymorphism() throws ObjectContextSerializationException, IOException {
+    public void doTestPolymorphism() throws ObjectContextSerializationException, IOException {
         Collection<Contact> contacts = new ArrayList<Contact>();
 
         EmailContact email = new EmailContact();
@@ -87,6 +87,5 @@ public class ObjectContextImplTest {
         context.add(User.class);
         String json = new String(context.write(user).copiedBytes());
         User u = context.read(new InternalSearchHit(1, "1", "user", json.getBytes(), null));
-
     }
 }

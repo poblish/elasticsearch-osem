@@ -21,9 +21,13 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.compass.core.CompassCallbackWithoutResult;
+import org.compass.core.CompassException;
+import org.compass.core.CompassSession;
 import org.elasticsearch.gps.CompassGps;
 import org.elasticsearch.gps.CompassGpsDevice;
 import org.elasticsearch.gps.CompassGpsException;
+import org.elasticsearch.gps.IndexPlan;
 import org.elasticsearch.gps.MirrorDataChangesGpsDevice;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
 
@@ -79,7 +83,6 @@ public abstract class AbstractGpsDevice implements CompassGpsDevice {
         return (filteredEntitiesLookupForIndex != null && filteredEntitiesLookupForIndex.contains(entity));
     }
 
-    /* (AGR_OSEM) 
     public synchronized void index(final IndexPlan indexPlan) throws CompassGpsException {
         if (!isRunning()) {
             throw new IllegalStateException(
@@ -92,14 +95,13 @@ public abstract class AbstractGpsDevice implements CompassGpsDevice {
             }
         });
     }
-*/
+
     /**
      * Derived devices must implement the method to perform the actual indexing
      * operation.
      */
-    /* (AGR_OSEM) 
     protected abstract void doIndex(CompassSession session, IndexPlan indexPlan) throws CompassGpsException;
-*/
+
     public synchronized void start() throws CompassGpsException {
         if (name == null) {
             throw new IllegalArgumentException("Must set the name for the device");

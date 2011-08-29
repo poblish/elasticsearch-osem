@@ -63,8 +63,8 @@ public class SharedPrimaryKeyAssociationTests extends TestCase {
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
 
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().verifyIndex();
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
 
         compassTemplate = new CompassTemplate(compass);
 

@@ -51,10 +51,4 @@ public class MockIndexGpsDevice extends AbstractGpsDevice {
         object.value = value;
         objects.add(object);
     }
-
-	@Override
-	public void index(IndexPlan indexPlan) throws CompassGpsException, IllegalStateException
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
 }

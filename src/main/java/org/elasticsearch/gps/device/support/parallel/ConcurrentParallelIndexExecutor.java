@@ -27,6 +27,9 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.compass.core.CompassCallbackWithoutResult;
+import org.compass.core.CompassException;
+import org.compass.core.CompassSession;
 import org.compass.core.util.concurrent.NamedThreadFactory;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
@@ -109,14 +112,14 @@ public class ConcurrentParallelIndexExecutor implements ParallelIndexExecutor {
                 final IndexEntity[] indexEntities = entities[i];
                 tasks.add(new Callable() {
                     public Object call() throws Exception {
-/* (AGR_OSEM)
+
                         compassGps.executeForIndex(new CompassCallbackWithoutResult() {
                             protected void doInCompassWithoutResult(CompassSession session) throws CompassException {
                                 indexEntitiesIndexer.performIndex(session, indexEntities);
                                 session.flush();
                             }
                         });
-*/
+
                         return null;
                     }
                 });

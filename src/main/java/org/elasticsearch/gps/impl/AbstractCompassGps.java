@@ -167,7 +167,11 @@ public abstract class AbstractCompassGps implements CompassGpsInterfaceDevice {
         try {
             performingIndexOperation = true;
             doIndex(indexPlan);
-        } finally {
+        }
+	catch (Throwable t) {
+		throw new CompassGpsException( "Error", t);
+	}
+	finally {
             performingIndexOperation = false;
         }
     }

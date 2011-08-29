@@ -4,13 +4,15 @@
  */
 package org.compass.core;
 
+import org.elasticsearch.search.SearchHits;
+
 /**
  *
  * @author andrewregan
  */
 public interface CompassSession extends CompassSearchSession, CompassIndexSession, CompassOperations
 {
-	CompassHits find(String query);
+	SearchHits find(String query);
 
 	/**
 	 * Indicates that the session will be used for read only operations. Allowing to optimize

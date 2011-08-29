@@ -16,6 +16,8 @@
 
 package org.elasticsearch.gps.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -25,7 +27,11 @@ import org.compass.core.CompassCallback;
 import org.compass.core.CompassException;
 import org.compass.core.CompassTemplate;
 import org.compass.core.config.CompassSettings;
+import org.compass.core.events.RebuildEventListener;
 import org.compass.core.mapping.Cascade;
+import org.compass.core.spi.InternalCompass;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.IndexPlan;
 
@@ -44,7 +50,7 @@ public class SingleCompassGps extends AbstractCompassGps {
 
     private volatile Compass indexCompass;
 
-// (AGR_OSEM) ... private volatile CompassTemplate indexCompassTemplate;
+//  private volatile CompassTemplate indexCompassTemplate;
 
     private Map<String, Object> indexSettings;
 
@@ -90,7 +96,6 @@ public class SingleCompassGps extends AbstractCompassGps {
 */
         this.compassTemplate = new CompassTemplate(compass);
 
-/* (AGR_OSEM)
         // add a rebuild listener
         ((InternalCompass) compass).addRebuildEventListener(new RebuildEventListener() {
             public void onCompassRebuild(Compass compass) {
@@ -100,14 +105,48 @@ public class SingleCompassGps extends AbstractCompassGps {
                 refresh();
             }
         });
-*/
     }
 
     protected void doStop() throws CompassGpsException {
     }
 
-    protected void doIndex(final IndexPlan indexPlan) throws CompassGpsException
+    protected void doIndex( final IndexPlan inIndexPlan) throws CompassGpsException
     {
+	final IndicesAdminClient		theClient = compass.getClient().admin().indices();
+
+	if ( inIndexPlan.getTypes() == null)
+	{
+		// Just delete all... actually *don't*, cos we need to recreate existing ones, and we don't have a way of doing that right now...
+
+		// theClient.prepareDelete("_all").execute().actionGet();
+	}
+	else
+	{
+		// Get index names...
+
+		final Collection<String>		theTypes = new ArrayList<String>();
+
+		for ( Class eachClazz : inIndexPlan.getTypes())
+		{
+			theTypes.add( compass.getObjectContext().getType(eachClazz) );
+		}
+
+		// Delete all...
+
+		final String[]	theIndexesArray = theTypes.toArray( new String[ theTypes.size()]);
+
+		compass.getClient().admin().indices().prepareDelete(theIndexesArray).execute().actionGet();
+
+		// (Re-)create all...
+
+		for ( String eachIndex : theIndexesArray)
+		{
+			theClient.create( new CreateIndexRequest(eachIndex)).actionGet();    // (AGR) Should we batch?
+		}
+	}
+
+	new DefaultReplaceIndexCallback(devices.values(), inIndexPlan).buildIndexIfNeeded();
+
 /* (AGR_OSEM)
         ((InternalCompass) compass).stop();
 
@@ -143,15 +182,15 @@ public class SingleCompassGps extends AbstractCompassGps {
 */
     }
 
-
-    public void executeForIndex(CompassCallback callback) throws CompassException
+    public void executeForIndex( final CompassCallback callback) throws CompassException
     {
 /* (AGR_OSEM)
         if (indexCompassTemplate == null) {
             throw new IllegalStateException("executeForIndex is called outside of an index operation");
         }
-        indexCompassTemplate.execute(callback); */
-	log.trace("executeForIndex()");
+        indexCompassTemplate.execute(callback);
+*/
+	new CompassTemplate(compass).execute(callback);
     }
 
     public void executeForMirror( CompassCallback callback) throws CompassException
@@ -159,14 +198,20 @@ public class SingleCompassGps extends AbstractCompassGps {
 	compassTemplate.execute(callback);
     }
 
-    public boolean hasMappingForEntityForIndex(Class clazz) throws CompassException {
-        // (AGR_OSEM) ... return hasRootMappingForEntity(clazz, getIndexCompass());
-	/* (AGR_OSEM) */ return false;
+    public boolean hasMappingForEntityForIndex(Class clazz) throws CompassException
+    {
+	final String	theMapping = compass.getObjectContext().getType(clazz);
+
+	return ( theMapping != null);
     }
 
-    public boolean hasMappingForEntityForIndex(String name) throws CompassException {
-        // (AGR_OSEM) ... return hasRootMappingForEntity(name, getIndexCompass());
-	/* (AGR_OSEM) */ return false;
+    public boolean hasMappingForEntityForIndex(String inClassName) throws CompassException {
+	try {
+		return hasMappingForEntityForIndex( Class.forName(inClassName) );
+	}
+	catch (ClassNotFoundException ex) {
+		return !inClassName.contains(".");	// If no . assume it's already an index name (!), else it really is a class we know nothing about
+	}
     }
 
     public boolean hasMappingForEntityForMirror(Class clazz, Cascade cascade) throws CompassException {

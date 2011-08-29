@@ -17,17 +17,17 @@
 package org.compass.gps.device.hibernate.simple;
 
 import java.io.Serializable;
-import org.elasticsearch.osem.annotations.Indexable;
+import org.elasticsearch.osem.annotations.Searchable;
 
 /**
  * @author kimchy
  */
+@Searchable
 public class Simple implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    @Indexable
     private Integer id;
 
-    @Indexable
     private String value;
 
     public Integer getId() {

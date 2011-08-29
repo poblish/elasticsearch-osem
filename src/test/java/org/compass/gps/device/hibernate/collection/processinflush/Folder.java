@@ -21,8 +21,19 @@ import java.util.Set;
 /**
  * @author Maurice Nicholson
  */
-public class Folder {
-    Long id;
-    String name;
-    Set<Bookmark> bookmarks = new HashSet<Bookmark>();
+public class Folder
+{
+	Long id;
+	String name;
+	Set<Bookmark> bookmarks = new HashSet<Bookmark>();
+
+	public Long getId()
+	{
+		return id;
+	}
+
+	public void setId(Long id)
+	{
+		this.id = id;
+	}
 }

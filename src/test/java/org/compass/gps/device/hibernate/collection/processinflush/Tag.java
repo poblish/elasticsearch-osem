@@ -18,7 +18,18 @@ package org.compass.gps.device.hibernate.collection.processinflush;
 /**
  * @author Maurice Nicholson
  */
-public class Tag {
-    Long id;
-    String tag;
+public class Tag
+{
+	Long id;
+	String tag;
+
+	public Long getId()
+	{
+		return id;
+	}
+
+	public void setId(Long id)
+	{
+		this.id = id;
+	}
 }

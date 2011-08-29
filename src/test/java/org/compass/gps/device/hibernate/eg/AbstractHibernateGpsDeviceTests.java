@@ -22,7 +22,6 @@ import javax.naming.InitialContext;
 import junit.framework.TestCase;
 import org.compass.core.Compass;
 import org.compass.core.util.FileHandlerMonitor;
-import org.elasticsearch.osem.core.ObjectContext;
 import org.elasticsearch.osem.core.ObjectContextFactory;
 import org.elasticsearch.test.ElasticSearchTests;
 import org.objectweb.jotm.Jotm;
@@ -60,26 +59,28 @@ public abstract class AbstractHibernateGpsDeviceTests extends TestCase {
 //                .configure("/org/compass/gps/device/hibernate/eg/compass-mirror.cfg.xml");
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-	final ObjectContext	theObjectContext = ObjectContextFactory.create();
-
-	mirrorCompass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// mirrorCompass = cpConf.buildCompass();
+	mirrorCompass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());
 
 	fileHandlerMonitorMirror = FileHandlerMonitor.getFileHandlerMonitor(mirrorCompass);
         fileHandlerMonitorMirror.verifyNoHandlers();
-        // (AGR_OSEM) ... mirrorCompass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... mirrorCompass.getSearchEngineIndexManager().verifyIndex();
+
+        ElasticSearchTests.deleteAllIndexes(mirrorCompass);
+        ElasticSearchTests.verifyAllIndexes(mirrorCompass);
+
+	ElasticSearchTests.populateContextAndIndices( mirrorCompass, User.class);
 
 //        CompassConfiguration cpBatchConf = new CompassConfiguration()
 //                .configure("/org/compass/gps/device/hibernate/eg/compass-index.cfg.xml");
 //        cpBatchConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 //        indexCompass = cpBatchConf.buildCompass();
 
-	indexCompass = ElasticSearchTests.mockCompass( mirrorCompass.getClient(), theObjectContext);	//  indexCompass = cpBatchConf.buildCompass();
+	indexCompass = ElasticSearchTests.mockCompass( mirrorCompass.getClient(), ObjectContextFactory.create());
 
         fileHandlerMonitorIndex = FileHandlerMonitor.getFileHandlerMonitor(indexCompass);
         fileHandlerMonitorIndex.verifyNoHandlers();
-        // (AGR_OSEM) ... indexCompass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... indexCompass.getSearchEngineIndexManager().verifyIndex();
+
+        // ElasticSearchTests.deleteAllIndexes(indexCompass);
+        // ElasticSearchTests.verifyAllIndexes(indexCompass);
 
         // (AGR_OSEM) ... compassGps = new DualCompassGps(indexCompass, mirrorCompass);
     }

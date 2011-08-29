@@ -64,9 +64,17 @@ public class DefaultHibernateEntitiesLocator implements HibernateEntitiesLocator
             }
             Class clazz = classMetadata.getMappedClass(EntityMode.POJO);
 
-// (AGR_OSEM)	ResourceMapping resourceMapping = gps.getMappingForEntityForIndex(entityname);
-// (AGR_OSEM)	EntityInformation entityInformation = new EntityInformation(clazz, entityname, resourceMapping.getSubIndexHash().getSubIndexes());
-// (AGR_OSEM)	entitiesList.add(entityInformation);
+	    // (AGR) starts
+
+	    final String	theType = gps.getIndexCompass().getObjectContext().getType(clazz);
+
+	    String[]	theSubindexes = new String[]{theType};	// gps.getMappingForEntityForIndex(entityname).getSubIndexHash().getSubIndexes()
+
+	    EntityInformation entityInformation = new EntityInformation(clazz, entityname, theSubindexes);
+
+	    // (AGR) ends
+
+	    entitiesList.add(entityInformation);
 
 	    if (log.isDebugEnabled()) {
                 log.debug("Entity [" + entityname + "] will be indexed");

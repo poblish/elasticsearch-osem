@@ -20,13 +20,13 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import org.compass.core.Compass;
-import org.compass.core.config.CompassConfiguration;
-import org.compass.core.config.CompassEnvironment;
 import org.compass.core.util.FileHandlerMonitor;
 import org.elasticsearch.gps.CompassGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateSyncTransactionFactory;
 import org.elasticsearch.gps.impl.SingleCompassGps;
+import org.elasticsearch.osem.core.ObjectContextFactory;
+import org.elasticsearch.test.ElasticSearchTests;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -52,19 +52,23 @@ public class DeleteIndirectSetOwnerWithCascadeTests extends TestCase {
         // set the session factory for the Hibernate transcation factory BEFORE we construct the compass instnace
         HibernateSyncTransactionFactory.setSessionFactory(sessionFactory);
 
-        CompassConfiguration cpConf = new CompassConfiguration()
-                .configure("/org/compass/gps/device/hibernate/collection/cascade/deletesetowner/compass.cfg.xml");
+//        CompassConfiguration cpConf = new CompassConfiguration()
+//                .configure("/org/compass/gps/device/hibernate/collection/cascade/deletesetowner/compass.cfg.xml");
+//
+//	// (AGR_OSEM) ... cpConf.registerConverter("stringmap", new MapConverter());
+//
+//	cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
+//        compass = cpConf.buildCompass();
 
-	// (AGR_OSEM) ... cpConf.registerConverter("stringmap", new MapConverter());
-
-	cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
-        compass = cpConf.buildCompass();
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
 
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().verifyIndex();
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
+
+	ElasticSearchTests.populateContextAndIndices( compass, Owner.class, Ownee.class);
 
         HibernateGpsDevice compassGpsDevice = new HibernateGpsDevice();
         compassGpsDevice.setName("hibernate");
@@ -86,12 +90,10 @@ public class DeleteIndirectSetOwnerWithCascadeTests extends TestCase {
         fileHandlerMonitor.verifyNoHandlers();
 
         sessionFactory.close();
+
+	ElasticSearchTests.deleteAllIndexes(compass);
+
 /* (AGR_OSEM) 
-        try {
-            compass.getSearchEngineIndexManager().deleteIndex();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         if (compass.getSpellCheckManager() != null) {
             try {
                 compass.getSpellCheckManager().deleteIndex();

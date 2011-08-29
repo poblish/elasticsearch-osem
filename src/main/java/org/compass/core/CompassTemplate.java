@@ -20,6 +20,7 @@ import org.compass.core.config.CompassSettings;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.osem.core.ElasticSearchSession;
+import org.elasticsearch.search.SearchHits;
 
 /**
  * Helper class that simplifies the Compass access code using the template
@@ -115,7 +116,7 @@ public class CompassTemplate implements CompassOperations {
 
     	final T	theResult = inAction.doInCompass(theSsn);
 
-    	logger.debug("executeForMirror() returned: " + theResult);
+    	logger.debug("executeForMirror() returned: " + theResult + " (null is probably OK)");
 
     	theSsn.close();
 
@@ -211,7 +212,20 @@ public class CompassTemplate implements CompassOperations {
     public CompassHits find(final String query) throws CompassException {
         return execute(new CompassCallback<CompassHits>() {
             public CompassHits doInCompass(CompassSession session) throws CompassException {
-                return session.find(query);
+                final SearchHits theHits = session.find(query);
+
+		return new CompassHits() {
+
+			@Override
+			public long length() {
+				return theHits.getTotalHits();
+			}
+
+			@Override
+			public SearchHits getSearchHits() {
+				return theHits;
+			}
+		};
             }
         });
     }

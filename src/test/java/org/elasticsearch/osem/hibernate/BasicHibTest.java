@@ -4,6 +4,7 @@
  */
 package org.elasticsearch.osem.hibernate;
 
+import org.elasticsearch.osem.core.ObjectContextFactory;
 import java.util.Collection;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -21,8 +22,6 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.gps.CompassGps;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.impl.SingleCompassGps;
-import org.elasticsearch.osem.core.ObjectContext;
-import org.elasticsearch.osem.core.ObjectContextFactory;
 import org.elasticsearch.osem.test.entities.impl.Actor;
 import org.elasticsearch.osem.test.entities.impl.Blog;
 import org.elasticsearch.osem.test.entities.impl.Feed;
@@ -60,9 +59,9 @@ public class BasicHibTest
 	{
 		s_Client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.107", 9300));
 
-		// Clear down...
+		// s_Client.prepareDeleteByQuery( IDX_ACTOR, IDX_ARTICLE, IDX_BLOG, IDX_FEED).setQuery( matchAllQuery() ).execute().actionGet();
 
-		s_Client.prepareDeleteByQuery( IDX_ACTOR, IDX_ARTICLE, IDX_BLOG, IDX_FEED).setQuery( matchAllQuery() ).execute().actionGet();
+		/* Clear down... */ ElasticSearchTests.deleteAllIndexes(s_Client);
 	}
     
 	/****************************************************************************
@@ -74,14 +73,9 @@ public class BasicHibTest
 
 		//////////////////////////////////////////////////////////////////////////////////////
 
-		final ObjectContext	theCtxt = ObjectContextFactory.create();
+		final Compass	theCompass = ElasticSearchTests.mockCompass( s_Client, ObjectContextFactory.create());
 
-		theCtxt.add( Actor.class );
-		theCtxt.add( Blog.class );
-		theCtxt.add( Feed.class );
-		theCtxt.add( TestArticle.class );
-
-		final Compass		theCompass = ElasticSearchTests.mockCompass( s_Client, theCtxt);
+		ElasticSearchTests.populateContextAndIndices( theCompass, Actor.class, Blog.class, Feed.class, TestArticle.class);
 
 		//////////////////////////////////////////////////////////////////////////////////////
 

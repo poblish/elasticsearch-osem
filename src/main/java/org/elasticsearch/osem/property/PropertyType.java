@@ -357,7 +357,7 @@ abstract class AbstractStringTypeAdapter<T> extends AbstractTypeAdapter<T> {
         if (indexable.getIncludeInAll() != null) {
             builder.includeInAll(indexable.getIncludeInAll());
         }
-        if (indexable.getIndex() != Index.NA) {
+        if (indexable.getIndex() != Index.ANALYZED) {	// (AGR) Fixed. Want values different from the default!
             builder.index(getIndex(indexable.getIndex()));
         }
         // TODO [alois.cochard] Link with AnalysisService to get the named analyzer

@@ -17,13 +17,13 @@ package org.compass.gps.device.hibernate.collection.processinflush;
 
 import junit.framework.TestCase;
 import org.compass.core.Compass;
-import org.compass.core.config.CompassConfiguration;
-import org.compass.core.config.CompassEnvironment;
 import org.compass.core.util.FileHandlerMonitor;
 import org.elasticsearch.gps.CompassGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateSyncTransactionFactory;
 import org.elasticsearch.gps.impl.SingleCompassGps;
+import org.elasticsearch.osem.core.ObjectContextFactory;
+import org.elasticsearch.test.ElasticSearchTests;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -49,16 +49,19 @@ public class ProcessedInFlushTests extends TestCase {
         // set the session factory for the Hibernate transcation factory BEFORE we construct the compass instnace
         HibernateSyncTransactionFactory.setSessionFactory(sessionFactory);
 
-        CompassConfiguration cpConf = new CompassConfiguration()
-                .configure("/org/compass/gps/device/hibernate/collection/processinflush/compass.cfg.xml");
-        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
-        compass = cpConf.buildCompass();
+//        CompassConfiguration cpConf = new CompassConfiguration()
+//                .configure("/org/compass/gps/device/hibernate/collection/processinflush/compass.cfg.xml");
+//        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
+
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
 
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().verifyIndex();
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
+
+	ElasticSearchTests.populateContextAndIndices( compass, Folder.class, Bookmark.class, Tag.class);
 
         HibernateGpsDevice compassGpsDevice = new HibernateGpsDevice();
         compassGpsDevice.setName("hibernate");
@@ -80,12 +83,10 @@ public class ProcessedInFlushTests extends TestCase {
         fileHandlerMonitor.verifyNoHandlers();
 
         sessionFactory.close();
+
+	ElasticSearchTests.deleteAllIndexes(compass);
+
 /* (AGR_OSEM)
-        try {
-            compass.getSearchEngineIndexManager().deleteIndex();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         if (compass.getSpellCheckManager() != null) {
             try {
                 compass.getSpellCheckManager().deleteIndex();

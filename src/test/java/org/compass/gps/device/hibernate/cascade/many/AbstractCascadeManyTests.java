@@ -6,13 +6,11 @@ import junit.framework.TestCase;
 import org.compass.core.Compass;
 import org.compass.core.util.FieldInvoker;
 import org.compass.core.util.FileHandlerMonitor;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.gps.CompassGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateSyncTransactionFactory;
 import org.elasticsearch.gps.device.hibernate.lifecycle.HibernateEventListener;
 import org.elasticsearch.gps.impl.SingleCompassGps;
-import org.elasticsearch.osem.core.ObjectContext;
 import org.elasticsearch.osem.core.ObjectContextFactory;
 import org.elasticsearch.test.ElasticSearchTests;
 import org.hibernate.SessionFactory;
@@ -23,7 +21,6 @@ import org.hibernate.classic.Session;
 import org.hibernate.event.EventListeners;
 import org.hibernate.event.PostInsertEventListener;
 import org.hibernate.impl.SessionFactoryImpl;
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * @author Maurice Nicholson
@@ -46,18 +43,15 @@ public abstract class AbstractCascadeManyTests extends TestCase {
 //                .configure(getCompassConfigLocation());
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-	final ObjectContext	theObjectContext = ObjectContextFactory.create();
-
-	theObjectContext.add( User.class );
-	theObjectContext.add( Album.class );
-
-        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// cpConf.buildCompass();
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
 
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().verifyIndex();
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
+
+	ElasticSearchTests.populateContextAndIndices( compass, User.class, Album.class);
 
         HibernateGpsDevice compassGpsDevice = new HibernateGpsDevice();
         compassGpsDevice.setName("hibernate");
@@ -87,12 +81,10 @@ public abstract class AbstractCascadeManyTests extends TestCase {
         compass.close();
         fileHandlerMonitor.verifyNoHandlers();
         sessionFactory.close();
+
+	ElasticSearchTests.deleteAllIndexes(compass);
+	
 /* (AGR_OSEM)
-        try {
-            compass.getSearchEngineIndexManager().deleteIndex();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         if (compass.getSpellCheckManager() != null) {
             try {
                 compass.getSpellCheckManager().deleteIndex();
@@ -368,10 +360,7 @@ public abstract class AbstractCascadeManyTests extends TestCase {
 
     private int numIndexed( final Class type)
     {
-	final String		theIdx = type.getSimpleName().toLowerCase();
-	final SearchResponse	theSearchResponse = compass.getClient().prepareSearch(theIdx).setQuery( matchAllQuery() ).execute().actionGet();
-
-	return (int) theSearchResponse.getHits().totalHits();
+	return (int) ElasticSearchTests.countHitsForIndex( compass, compass.getObjectContext().getType(type));
     }
 
     public abstract String getCompassConfigLocation();

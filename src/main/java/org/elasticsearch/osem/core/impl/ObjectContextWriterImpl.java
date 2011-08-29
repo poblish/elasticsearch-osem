@@ -88,7 +88,13 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
     @SuppressWarnings("unchecked")
     private void write(XContentBuilder builder, String name, PropertySignature signature, Object value) throws IllegalArgumentException, IOException,
             IllegalAccessException, InvocationTargetException {
-        if (name != null) {
+
+/*	if ( signature == null) {	// (AGR)
+		System.out.println("**** SKIP **** " + name + " / " + signature);
+		return;
+	}
+*/
+	if (name != null) {
             if (name.equals("_id") && value == null) {
                 // Filtering "_id" field with null value, for automatic id generation
                 return;
@@ -98,6 +104,29 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
         if (value == null) {
             builder.nullValue();
         } else {
+	    if ( signature.getType() == null)	// (AGR)
+	    {
+                   if ( value instanceof org.hibernate.collection.PersistentSet)
+		    {
+			   //  org.hibernate.collection.PersistentSet	x = (org.hibernate.collection.PersistentSet) value;
+
+			    Object[] a = value.getClass().isArray() ? (Object[]) value : ((Collection) value).toArray();
+			    builder.startArray();
+			    for (Object o : a) {
+				// write(builder, o);	// write(builder, null, signature.getComposite(), o);
+				    builder.startObject();
+				    write(builder, o);
+				    builder.endObject();
+			    }
+			    builder.endArray();
+		    }
+		    else
+		    {
+			    builder.value(value);
+		    }
+
+		    return;
+	    }
             switch (signature.getType()) {
                 case Array:
                 case Collection:

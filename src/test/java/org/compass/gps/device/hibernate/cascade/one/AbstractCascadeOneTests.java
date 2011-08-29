@@ -59,8 +59,8 @@ public abstract class AbstractCascadeOneTests extends TestCase {
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
 
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().verifyIndex();
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
 
 //        HibernateEntityLifecycleInjector lifecycleInjector = new org.compass.gps.device.hibernate.lifecycle.DefaultHibernateEntityCollectionLifecycleInjector(true);
 
@@ -97,12 +97,10 @@ public abstract class AbstractCascadeOneTests extends TestCase {
         sessionFactory.close();
 
         hibernateEventListener = null;
+
+	ElasticSearchTests.deleteAllIndexes(compass);
+
 /* (AGR_OSEM)
-        try {
-            compass.getSearchEngineIndexManager().deleteIndex();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         if (compass.getSpellCheckManager() != null) {
             try {
                 compass.getSpellCheckManager().deleteIndex();

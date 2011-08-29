@@ -16,12 +16,12 @@
 
 package org.compass.gps.impl;
 
+import org.elasticsearch.osem.test.entities.impl.TestArticle;
+import org.elasticsearch.osem.test.entities.impl.Actor;
 import java.util.Properties;
 
 import org.compass.core.Compass;
 import org.compass.core.CompassSession;
-import org.compass.core.config.CompassConfiguration;
-import org.compass.core.config.CompassEnvironment;
 import org.compass.core.lucene.LuceneEnvironment;
 import org.compass.gps.device.MockIndexGpsDevice;
 import org.compass.gps.device.MockIndexGpsDeviceObject;
@@ -56,7 +56,12 @@ public class SingleCompassGpsIndexTests {
 //        conf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 //        compass = conf.buildCompass();
 
-	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// cpConf.buildCompass();
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);
+
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
+
+	ElasticSearchTests.populateContextAndIndices( compass, MockIndexGpsDeviceObject.class);
 
         device = new MockIndexGpsDevice();
         device.setName("test");
@@ -81,14 +86,17 @@ public class SingleCompassGpsIndexTests {
     @Test
     public void doTestWithPropertiesForSingleCompassGps()
     {
-        CompassConfiguration conf = new CompassConfiguration();
-        // (AGR_OSEM) ... conf.setSetting(CompassEnvironment.CONNECTION, "target/test-index");
-        // (AGR_OSEM) ... conf.addClass(MockIndexGpsDeviceObject.class);
-        conf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
+//        CompassConfiguration conf = new CompassConfiguration();
+//        // (AGR_OSEM) ... conf.setSetting(CompassEnvironment.CONNECTION, "target/test-index");
+//        // (AGR_OSEM) ... conf.addClass(MockIndexGpsDeviceObject.class);
+//        conf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-        compass = conf.buildCompass();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().createIndex();
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());
+
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
+
+	ElasticSearchTests.populateContextAndIndices( compass, Actor.class, TestArticle.class, MockIndexGpsDeviceObject.class);
 
         device = new MockIndexGpsDevice();
         device.setName("test");
@@ -122,7 +130,7 @@ public class SingleCompassGpsIndexTests {
         CompassSession session = compass.openSession();
         // (AGR_OSEM) ... CompassTransaction tr = session.beginTransaction();
 	
-        Assert.assertEquals( inClient.prepareSearch("FIXME").setQuery( matchAllQuery() ).execute().actionGet().getHits().getTotalHits(), 0);
+        Assert.assertEquals( inClient.prepareSearch("_all").setQuery( matchAllQuery() ).execute().actionGet().getHits().getTotalHits(), 0);
 
         // (AGR_OSEM) ... tr.commit();
         session.close();

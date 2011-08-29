@@ -18,8 +18,18 @@ package org.compass.gps.device.hibernate.collection.cascade.deletesetowner;
 /**
  * @author Maurice Nicholson
  */
-public class Owner {
-    public Long id, version;
+public class Owner
+{
+	public Long id, version;
+	public Ownee ownee;
 
-    public Ownee ownee;
+	public Long getId()
+	{
+		return id;
+	}
+
+	public void setId(Long id)
+	{
+		this.id = id;
+	}
 }

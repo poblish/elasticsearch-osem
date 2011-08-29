@@ -19,6 +19,7 @@ package org.compass.core.spi;
 import org.compass.core.Compass;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassSettings;
+import org.compass.core.events.RebuildEventListener;
 
 public interface InternalCompass extends Compass {
 
@@ -50,9 +51,9 @@ public interface InternalCompass extends Compass {
     PropertyNamingStrategy getPropertyNamingStrategy();
 
     CompassEventManager getEventManager();
-
+*/
     void addRebuildEventListener(RebuildEventListener eventListener);
 
     void removeRebuildEventListener(RebuildEventListener eventListener);
-*/
+
 }

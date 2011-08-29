@@ -17,13 +17,12 @@
 package org.compass.gps.device.hibernate.simple;
 
 import junit.framework.Assert;
-import org.compass.core.CompassHits;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassConfiguration;
+import org.elasticsearch.search.SearchHits;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
@@ -90,13 +89,16 @@ public abstract class AbstractSimpleHibernateGpsDeviceTests extends AbstractHibe
         simple = sess.load(Simple.class, 2);
         Assert.assertEquals("value2", simple.getValue());
 
-        CompassHits hits = sess.find("value1");
-        Assert.assertEquals(1, hits.length());
+        SearchHits hits = sess.find("value1");
+        Assert.assertEquals(1, hits.getTotalHits());
 
         // (AGR_OSEM)... tr.commit();
         sess.close();
     }
 
+    /*
+     * (AGR) 29 Aug 2011. Don't want mirror-specific stuff any more
+     * 
     public void testMirrorWithCommit() throws Exception {
         compassGps.index();
 
@@ -138,6 +140,7 @@ public abstract class AbstractSimpleHibernateGpsDeviceTests extends AbstractHibe
         // (AGR_OSEM) ... compassTransaction.commit();
         sess.close();
     }
+*/
 
     public void testExtend() throws Exception {
         compassGps.index();

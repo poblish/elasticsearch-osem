@@ -13,15 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.compass.gps.device;
 
 /**
  * @author kimchy
  */
-public class MockIndexGpsDeviceObject {
+public class MockIndexGpsDeviceObject
+{
+	public Long id;
+	public String value;
 
-    public Long id;
+	public Long getId()
+	{
+		return id;
+	}
 
-    public String value;
+	public void setId(Long id)
+	{
+		this.id = id;
+	}
 }

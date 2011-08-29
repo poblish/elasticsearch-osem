@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 the original author or authors.
+ * Copyright 2004-2009 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.compass.gps.device.hibernate.collection.cascade.deletesetowner;
 
-import java.util.Set;
+package org.compass.core.events;
+
+import org.compass.core.Compass;
 
 /**
- * @author Maurice Nicholson
+ * An event listener allowing to be notified when Compass was rebuilt.
+ *
+ * @author kimchy
  */
-public class Ownee
-{
-	public Long id, version;
-	public Set<String> attributes;
+public interface RebuildEventListener {
 
-	public Long getId()
-	{
-		return id;
-	}
-
-	public void setId(Long id)
-	{
-		this.id = id;
-	}
+    /**
+     * A callback notifiying a listener when Compass was rebuilt.
+     */
+    void onCompassRebuild(Compass compass);
 }

@@ -56,7 +56,7 @@ public class CollectionTests {
     private SessionFactory sessionFactory;
 
     @BeforeMethod
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.rmi.registry.RegistryContextFactory");
         System.setProperty(Context.PROVIDER_URL, "rmi://localhost:1099");
 
@@ -85,8 +85,8 @@ public class CollectionTests {
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
 
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().verifyIndex();
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
 
         compassTemplate = new CompassTemplate(compass);
 
@@ -104,7 +104,7 @@ public class CollectionTests {
     }
 
     @Test
-    public void testCollection() {
+    public void doTestCollection() {
 
         Session s = sessionFactory.openSession();
         Transaction tx = s.beginTransaction();
@@ -118,10 +118,10 @@ public class CollectionTests {
         tx.commit();
         s.close();
 
-        parent = (Parent) compassTemplate.load(Parent.class, parent.getId());
-        Assert.assertEquals("value", parent.getValue());
+        parent = compassTemplate.load(Parent.class, parent.getId());
+        Assert.assertEquals( parent.getValue(), "value");
 
-        Assert.assertEquals(1, compassTemplate.find("child1").length());
+        Assert.assertEquals( compassTemplate.find("child1").length(), 1);
 
         s = sessionFactory.openSession();
         tx = s.beginTransaction();
@@ -140,7 +140,7 @@ public class CollectionTests {
     }
 
     @AfterMethod
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         sessionFactory.close();
         compassGps.stop();
         compass.close();

@@ -16,9 +16,12 @@
 
 package org.compass.gps.device.hibernate.transaction;
 
+import org.elasticsearch.osem.annotations.Searchable;
+
 /**
  * @author kimchy
  */
+@Searchable
 public class A {
 
     Long id;

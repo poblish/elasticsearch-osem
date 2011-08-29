@@ -17,10 +17,16 @@
 package org.elasticsearch.gps.device.support.parallel;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import org.compass.core.CompassSession;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.IndexPlan;
 import org.elasticsearch.gps.device.AbstractGpsDevice;
+import org.elasticsearch.osem.core.ObjectContext;
 
 /**
  * <p>A base class for gps device that can parallel the index operation.
@@ -89,8 +95,7 @@ public abstract class AbstractParallelGpsDevice extends AbstractGpsDevice {
         // Note: once we find a match, we must add all the entities array, since the partitioner
         // "said" that they must be indexed 2ghter.
 
-/* (AGR_OSEM)
-        String[] arrSubIndexes = ((InternalCompass) ((CompassGpsInterfaceDevice) getGps()).getIndexCompass()).getSearchEngineFactory().getIndexManager().polyCalcSubIndexes(indexPlan.getSubIndexes(), indexPlan.getAliases(), indexPlan.getTypes());
+        String[] arrSubIndexes = /* (AGR) */ polyCalcSubIndexes( indexPlan.getSubIndexes(), indexPlan.getAliases(), indexPlan.getTypes());	// ((InternalCompass) ((CompassGpsInterfaceDevice) getGps()).getIndexCompass()).getSearchEngineFactory().getIndexManager().polyCalcSubIndexes(indexPlan.getSubIndexes(), indexPlan.getAliases(), indexPlan.getTypes());
         HashSet<String> subIndexes = new HashSet<String>(Arrays.asList(arrSubIndexes));
 
         ArrayList<IndexEntity[]> calcEntities = new ArrayList<IndexEntity[]>();
@@ -114,7 +119,7 @@ public abstract class AbstractParallelGpsDevice extends AbstractGpsDevice {
 
         IndexEntity[][] entitiesToIndex = calcEntities.toArray(new IndexEntity[calcEntities.size()][]);
         parallelIndexExecutor.performIndex(entitiesToIndex, indexEntitiesIndexer, compassGps);
-*/
+
     }
 
     /**
@@ -155,4 +160,86 @@ public abstract class AbstractParallelGpsDevice extends AbstractGpsDevice {
     public void setIndexEntitiesPartitioner(IndexEntitiesPartitioner indexEntitiesPartitioner) {
         this.indexEntitiesPartitioner = indexEntitiesPartitioner;
     }
+
+    
+    
+    
+    
+    
+
+    public String[] polyCalcSubIndexes(String[] subIndexes, String[] aliases, Class[] types) {
+        return internalCalcSubIndexes(subIndexes, aliases, types, true);
+    }
+
+    public String[] internalCalcSubIndexes(String[] subIndexes, String[] aliases, Class[] types, boolean poly) {
+        if (aliases == null && types == null) {
+            return calcSubIndexes(subIndexes, aliases);
+        }
+        HashSet<String> aliasesSet = new HashSet<String>();
+        if (aliases != null) {
+            for (String alias : aliases) {
+/* (AGR_OSEM)
+	       ResourceMapping resourceMapping = mapping.getRootMappingByAlias(alias);
+                if (resourceMapping == null) {
+                    throw new IllegalArgumentException("No root mapping found for alias [" + alias + "]");
+                }
+                aliasesSet.add(resourceMapping.getAlias());
+                if (poly) {
+                    aliasesSet.addAll(Arrays.asList(resourceMapping.getExtendingAliases()));
+                } */
+
+		aliasesSet.add(alias);
+            }
+        }
+        if (types != null) {
+		
+            final ObjectContext	theCtxt = compassGps.getIndexCompass().getObjectContext();	// (AGR)
+
+            for (Class type : types) {
+/* (AGR_OSEM)
+                ResourceMapping resourceMapping = mapping.getRootMappingByClass(type);
+                if (resourceMapping == null) {
+                    throw new IllegalArgumentException("No root mapping found for class [" + type + "]");
+                }
+                aliasesSet.add(resourceMapping.getAlias());
+                if (poly) {
+                    aliasesSet.addAll(Arrays.asList(resourceMapping.getExtendingAliases()));
+                } */
+
+		aliasesSet.add( theCtxt.getType(type) );	// (AGR)
+            }
+        }
+        return calcSubIndexes(subIndexes, aliasesSet.toArray(new String[aliasesSet.size()]));
+    }
+
+    public String[] calcSubIndexes(String[] subIndexes, String[] aliases) {
+        if (aliases == null) {
+            if (subIndexes == null) {
+                return getSubIndexes();
+            }
+            // filter out any duplicates
+            HashSet<String> ret = new HashSet<String>();
+            ret.addAll(Arrays.asList(subIndexes));
+            return ret.toArray(new String[ret.size()]);
+        }
+        HashSet<String> ret = new HashSet<String>();
+        for (String aliase : aliases) {
+            List<String> subIndexesList = Collections.singletonList(aliase);	// (AGR_OSEM) subIndexesByAlias.get(aliase);
+            if (subIndexesList == null) {
+                throw new IllegalArgumentException("No sub-index is mapped to alias [" + aliase + "]");
+            }
+            for (String subIndex : subIndexesList) {
+                ret.add(subIndex);
+            }
+        }
+        if (subIndexes != null) {
+            ret.addAll(Arrays.asList(subIndexes));
+        }
+        return ret.toArray(new String[ret.size()]);
+    }
+
+    public String[] getSubIndexes() {
+        return /* (AGR_OSEM) FIXME */ new String[]{"simplebase", "simpleextend", "simple"};	// subIndexes;
+    }
+
 }

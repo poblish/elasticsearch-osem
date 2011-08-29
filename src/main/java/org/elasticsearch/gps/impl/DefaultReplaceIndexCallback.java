@@ -35,13 +35,12 @@ public class DefaultReplaceIndexCallback // (AGR_OSEM) ... implements SearchEngi
         this.indexPlan = indexPlan;
     }
 
-/* (AGR_OSEM)
-    public void buildIndexIfNeeded() throws SearchEngineException {
+    public void buildIndexIfNeeded() /* (AGR_OSEM) throws SearchEngineException */ {
         for (CompassGpsDevice device : devices) {
             device.index(indexPlan);
         }
     }
-*/
+
     public String[] getSubIndexes() {
         return indexPlan.getSubIndexes();
     }

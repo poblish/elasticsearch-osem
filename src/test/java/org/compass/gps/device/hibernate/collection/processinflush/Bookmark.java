@@ -21,9 +21,20 @@ import java.util.Set;
 /**
  * @author Maurice Nicholson
  */
-public class Bookmark {
-    Long id;
-    String name;
-    Folder folder;
-    Set<Tag> tags = new HashSet<Tag>();
+public class Bookmark
+{
+	Long id;
+	String name;
+	Folder folder;
+	Set<Tag> tags = new HashSet<Tag>();
+
+	public Long getId()
+	{
+		return id;
+	}
+
+	public void setId(Long id)
+	{
+		this.id = id;
+	}
 }

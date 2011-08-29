@@ -10,8 +10,9 @@ import org.elasticsearch.search.SearchHits;
  *
  * @author andrewregan
  */
-public interface CompassHits extends SearchHits
+public interface CompassHits
 {
 	long length();
-	long getLength();
+
+	SearchHits getSearchHits();
 }

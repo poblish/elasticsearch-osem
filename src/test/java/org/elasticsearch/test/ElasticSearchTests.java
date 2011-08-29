@@ -4,6 +4,11 @@
  */
 package org.elasticsearch.test;
 
+import org.elasticsearch.gps.IndexPlan;
+import org.compass.core.events.RebuildEventListener;
+import org.compass.core.spi.InternalCompass;
+import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.osem.core.ElasticSearchSession;
 import org.compass.core.CompassSession;
 import org.easymock.IAnswer;
@@ -14,7 +19,9 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.osem.core.ObjectContext;
+import org.powermock.api.easymock.PowerMock;
 import static org.easymock.EasyMock.*;
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  *
@@ -61,7 +68,7 @@ public class ElasticSearchTests
 	****************************************************************************/
 	public static Compass mockCompass( final Client inClient, final ObjectContext inCtxt, final CompassSettings inSettings)
 	{
-		final Compass theCompass = createMock( Compass.class );
+		final InternalCompass theCompass = createMock( InternalCompass.class );
 
 		expect( theCompass.getSettings() ).andReturn(inSettings).atLeastOnce();
 		expect( theCompass.getObjectContext() ).andReturn(inCtxt).anyTimes();
@@ -75,10 +82,61 @@ public class ElasticSearchTests
 		} ).anyTimes();
 
 		theCompass.close();
-		expectLastCall().atLeastOnce();
+		expectLastCall().anyTimes();
+
+		theCompass.addRebuildEventListener( anyObject( RebuildEventListener.class ) );
+		expectLastCall().anyTimes();
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////
 
 		replay(theCompass);
 
 		return theCompass;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	public static void deleteAllIndexes( final Compass inCompass)
+	{
+		deleteAllIndexes( inCompass.getClient() );
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	public static void deleteAllIndexes( final Client inClient)
+	{
+		inClient.admin().indices().prepareDelete("_all").execute().actionGet();
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	public static void verifyAllIndexes( final Compass inCompass)
+	{
+		// NOOP
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	public static long countHitsForIndex( final Compass inCompass, final String inIdx)
+	{
+		inCompass.getClient().admin().indices().prepareRefresh(inIdx).execute().actionGet();	// (AGR) Be careful!!
+
+		return inCompass.getClient().prepareSearch(inIdx).setQuery( matchAllQuery() ).execute().actionGet().getHits().getTotalHits();
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	public static void populateContextAndIndices( final Compass inCompass, final Class... inClasses)
+	{
+		final IndicesAdminClient		theClient = inCompass.getClient().admin().indices();
+
+		for ( final Class eachClazz : inClasses)
+		{
+			inCompass.getObjectContext().add(eachClazz);
+
+			final String	theIndexName = inCompass.getObjectContext().getType(eachClazz);
+
+			/* final CreateIndexResponse x = */ theClient.create( new CreateIndexRequest(theIndexName)).actionGet();    // (AGR) Should we batch?
+		}
 	}
 }

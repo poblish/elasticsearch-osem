@@ -7,7 +7,6 @@ package org.elasticsearch.osem.core;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.compass.core.CompassException;
-import org.compass.core.CompassHits;
 import org.compass.core.CompassSearchSession;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassSettings;
@@ -25,17 +24,19 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
  */
 public class ElasticSearchSession implements CompassSession
 {
-	private final ObjectContext	m_Ctxt;
-	private final Client		m_Client;
+	private final ObjectContext			m_Ctxt;
+	private final Client				m_Client;
+//	private final ClassIndexNamingStrategyIF		m_NamingStrategy;
 
-	private static final ESLogger	logger = Loggers.getLogger( ElasticSearchSession.class );
+	private static final ESLogger			logger = Loggers.getLogger( ElasticSearchSession.class );
 
 	/****************************************************************************
 	****************************************************************************/
-	public ElasticSearchSession( final ObjectContext inCtxt, final Client inClient)
+	public ElasticSearchSession( final ObjectContext inCtxt, final Client inClient)	//, final ClassIndexNamingStrategyIF inStrategy)
 	{
 		m_Ctxt = inCtxt;
 		m_Client = inClient;
+//		m_NamingStrategy = inStrategy;
 	}
 
 	/****************************************************************************
@@ -43,7 +44,7 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void create( final Object inEntity) throws CompassException
 	{
-		logger.debug("create() theSsn = " + this);
+		logger.debug("create() for " + inEntity);	// theSsn = " + this);
 
 		String		theId = m_Ctxt.getId(inEntity);
 
@@ -58,13 +59,14 @@ public class ElasticSearchSession implements CompassSession
 		}
 
 		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
+	//	final String		theIdx = m_NamingStrategy.toIndexName( inEntity.getClass() );
 
 		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx.toLowerCase(), "xxx", theId)
 								.setSource( m_Ctxt.write(inEntity) )
 								.execute()
 								.actionGet();
 
-		logger.debug("create() DONE: " + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
+		logger.debug("create() DONE: " + theIdx + "/" + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
 	}
 
 	/****************************************************************************
@@ -89,12 +91,12 @@ public class ElasticSearchSession implements CompassSession
 
 		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
 
-		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx.toLowerCase(), "xxx", theId)
+		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx, "xxx", theId)
 								.setSource( m_Ctxt.write(inEntity) )
 								.execute()
 								.actionGet();
 
-		logger.debug("save() DONE: " + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
+		logger.debug("save() DONE: " + theIdx + "/" + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
 	}
 
 	/****************************************************************************
@@ -126,7 +128,7 @@ public class ElasticSearchSession implements CompassSession
 			throw new RuntimeException("Could not find " + theIdx + " #" + theId + " to delete");
 		}
 
-		logger.debug("delete() DONE: " + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
+		logger.debug("delete() DONE: " + theIdx + "/" + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
 	}
 
 	/****************************************************************************
@@ -134,9 +136,17 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public <T> T load( final Class<T> inClazz, final Object inId) throws CompassException
 	{
-		final String		theIdx = inClazz.getSimpleName().toLowerCase();
+		final String		theIdx = m_Ctxt.getType(inClazz);
+
+	//	m_Client.admin().indices().prepareRefresh(theIdx).execute().actionGet();
+		/* FIXME. Caution!!! */ logger.debug("load(): refresh got fails: " + m_Client.admin().indices().prepareRefresh(theIdx).execute().actionGet().getShardFailures());
+
+		logger.debug("load(): WANT " + theIdx + " #" + inId);
+
 		final SearchResponse	theSearchResponse = m_Client.prepareSearch(theIdx).setQuery( idsQuery("xxx").addIds( String.valueOf(inId) ) ).execute().actionGet();
 		final SearchHits		theHits = theSearchResponse.getHits();
+
+		logger.debug("load(): got " + theSearchResponse);
 
 		if (theHits.getTotalHits() == 0)
 		{
@@ -144,7 +154,7 @@ public class ElasticSearchSession implements CompassSession
 		}
 
 		final SearchHit		theHit = theHits.iterator().next();
-		final T			theObj = m_Ctxt.read( theHits.iterator().next() );
+		final T			theObj = m_Ctxt.read(theHit);
 
 		return theObj;
 	}
@@ -155,6 +165,20 @@ public class ElasticSearchSession implements CompassSession
 	public <T> T get( final Class<T> inClazz, final Object inId) throws CompassException
 	{
 		return load( inClazz, inId);
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override
+	public SearchHits find( final String inQuery)
+	{
+		// (AGR) FIXME. Need to *parse* inQuery
+
+		/* FIXME. Caution!!! */ m_Client.admin().indices().prepareRefresh("_all").execute().actionGet();
+
+		final SearchResponse theSearchResp = m_Client.prepareSearch("_all").setQuery( textQuery( "_all", inQuery) ).execute().actionGet();
+
+		return theSearchResp.getHits();
 	}
 
 	/****************************************************************************
@@ -188,19 +212,19 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void evict(Object obj)
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		logger.warn("evict(): *Ignoring* call to evict: " + obj);
 	}
 
 	@Override
 	public void evict(String alias, Object id)
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		logger.warn("evict(): *Ignoring* call to evict " + alias + " #" + id);
 	}
 
 	@Override
 	public void evictAll()
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		logger.warn("evict(): *Ignoring* call to evict all.");
 	}
 
 	@Override
@@ -278,7 +302,7 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void flush() throws CompassException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		logger.warn("flush(): *Ignoring* call to flush.");
 	}
 
 	@Override
@@ -309,11 +333,5 @@ public class ElasticSearchSession implements CompassSession
 	public void delete(Class clazz, Object... ids) throws CompassException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
-	public CompassHits find(String query)
-	{
-		throw new UnsupportedOperationException("find('" + query + "')");
 	}
 }

@@ -120,7 +120,25 @@ public class ObjectContextReaderImpl implements ObjectContextReader {
                 PropertySignature signature = signatures.get(property);
                 if (value != null) {
                     if (signature.getComposite() == null) {
+
+			if ( signature.getType() == null)
+			{
+				System.out.println("### IGNORE: " + signature);
+				continue;
+			}
+
                         value = signature.getType().getAdapter().read(serializable, (String) value);
+
+			// System.out.println("### " + property.getWriteMethod().getParameterTypes()[0]);
+			if ( value instanceof String && property.getWriteMethod().getParameterTypes()[0].equals( Integer.class ))    // (AGR) FIXME BODGE!
+			{
+				value = Integer.valueOf((String) value);
+			}
+			else if ( value instanceof String && property.getWriteMethod().getParameterTypes()[0].equals( Long.class ))    // (AGR) FIXME BODGE!
+			{
+				value = Long.valueOf((String) value);
+			}
+
                     } else {
                         switch (signature.getType()) {
                             case Array:
@@ -145,7 +163,13 @@ public class ObjectContextReaderImpl implements ObjectContextReader {
                         }
                     }
                 }
-                property.getWriteMethod().invoke(object, value);
+
+		try {
+			property.getWriteMethod().invoke(object, value);
+		} catch (IllegalArgumentException e) {
+			System.out.println("### Can't pass " + object + " & " + value + "/" + value.getClass() + " to " + property.getWriteMethod());
+			throw e;
+		}
             }
         }
 

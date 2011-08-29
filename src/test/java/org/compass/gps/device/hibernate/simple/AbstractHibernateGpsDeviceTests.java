@@ -25,7 +25,6 @@ import org.compass.core.util.FileHandlerMonitor;
 import org.elasticsearch.gps.CompassGps;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.impl.SingleCompassGps;
-import org.elasticsearch.osem.core.ObjectContext;
 import org.elasticsearch.osem.core.ObjectContextFactory;
 import org.elasticsearch.test.ElasticSearchTests;
 import org.hibernate.Session;
@@ -47,15 +46,13 @@ public abstract class AbstractHibernateGpsDeviceTests extends TestCase {
 
     protected CompassGps compassGps;
 
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception
+    {
         sessionFactory = doSetUpSessionFactory();
         setUpCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
-
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().verifyIndex();
 
         setUpGps();
         compassGps.start();
@@ -70,12 +67,10 @@ public abstract class AbstractHibernateGpsDeviceTests extends TestCase {
         fileHandlerMonitor.verifyNoHandlers();
 
         sessionFactory.close();
+
+	ElasticSearchTests.deleteAllIndexes(compass);
+
 /* (AGR_OSEM)
-        try {
-            compass.getSearchEngineIndexManager().deleteIndex();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         if (compass.getSpellCheckManager() != null) {
             try {
                 compass.getSpellCheckManager().deleteIndex();
@@ -107,13 +102,12 @@ public abstract class AbstractHibernateGpsDeviceTests extends TestCase {
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 //        compass = cpConf.buildCompass();
 
-	final ObjectContext	theObjectContext = ObjectContextFactory.create();
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());
 
-	theObjectContext.add( Simple.class );
-	theObjectContext.add( SimpleBase.class );
-	theObjectContext.add( SimpleExtend.class );
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
 
-	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// cpConf.buildCompass();
+	ElasticSearchTests.populateContextAndIndices( compass, Simple.class, SimpleBase.class, SimpleExtend.class);
     }
 
     protected void setUpGps() {

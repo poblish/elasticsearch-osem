@@ -17,11 +17,14 @@
 package org.compass.gps.device.hibernate.collection;
 
 import java.io.Serializable;
+import org.elasticsearch.osem.annotations.Searchable;
 
 /**
  * @author kimchy
  */
+@Searchable
 public class Child implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private Long id;
 

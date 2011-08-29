@@ -48,8 +48,8 @@ public class NullIdCollectionTests extends TestCase {
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
 
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().verifyIndex();
+        ElasticSearchTests.deleteAllIndexes(compass);
+        ElasticSearchTests.verifyAllIndexes(compass);
 
         HibernateGpsDevice compassGpsDevice = new HibernateGpsDevice();
         compassGpsDevice.setName("hibernate");
@@ -71,7 +71,8 @@ public class NullIdCollectionTests extends TestCase {
         fileHandlerMonitor.verifyNoHandlers();
         
         sessionFactory.close();
-        // (AGR_OSEM) ... compass.getSearchEngineIndexManager().deleteIndex();
+        
+	ElasticSearchTests.deleteAllIndexes(compass);
     }
 
     public void testMarshall() {
