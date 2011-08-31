@@ -20,9 +20,7 @@ package org.elasticsearch.osem.pojo.users;
 
 import java.util.Collection;
 
-import org.elasticsearch.osem.annotations.Indexable;
 import org.elasticsearch.osem.annotations.Searchable;
-import org.elasticsearch.osem.annotations.Store;
 
 /**
  * 
@@ -30,35 +28,39 @@ import org.elasticsearch.osem.annotations.Store;
  *
  */
 @Searchable
-public class User {
-	
+public class User
+{
 	private String id;
+	private Collection<Contact> contacts;
+	private String name;
 
-    private Collection<Contact> contacts;
-    
-    private String name;
-    
-    public String getId() {
+	public String getId()
+	{
 		return id;
 	}
-    
-    @Indexable(indexName = "_id")
-    public void setId(String id) {
-    	this.id = id;
-    }
 
-    public Collection<Contact> getContacts() {
-        return contacts;
-    }
+	public void setId(String id)
+	{
+		this.id = id;
+	}
 
-    public void setContacts(Collection<Contact> contacts) {
-        this.contacts = contacts;
-    }
+	public Collection<Contact> getContacts()
+	{
+		return contacts;
+	}
 
-    public void setName(String name) {
+	public void setContacts(Collection<Contact> contacts)
+	{
+		this.contacts = contacts;
+	}
+
+	public void setName(String name)
+	{
 		this.name = name;
 	}
-    public String getName() {
+
+	public String getName()
+	{
 		return name;
 	}
 }

@@ -19,7 +19,7 @@ package org.elasticsearch.gps.device.hibernate.embedded;
 import java.util.Properties;
 
 import org.compass.core.Compass;
-import org.elasticsearch.gps.CompassGps;
+import org.compass.core.CompassTemplate;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -41,37 +41,31 @@ public abstract class HibernateHelper {
     /**
      * Returns the Compass instance associated with the given Hibernate from the Hibernate session.
      */
-/* (AGR_OSEM)
     public static Compass getCompass(Session session) {
         return findEventListener(session).getCompass();
     }
-*/
+
     /**
      * Returns a CompassTemplate instance associated with the given Hibernate from the Hibernate session.
      */
-/* (AGR_OSEM)
     public static CompassTemplate getCompassTempalte(Session session) {
         return new CompassTemplate(findEventListener(session).getCompass());
     }
-*/
 
     /**
      * Returns the Compass instance associated with the given Hibernate from the Hiberante session factory.
      */
-/* (AGR_OSEM)
     public static Compass getCompass(SessionFactory sessionFactory) {
         return findEventListener(sessionFactory).getCompass();
     }
-*/
 
     /**
      * Returns the CompassTemplate instance associated with the given Hibernate from the Hiberante session factory.
      */
-/* (AGR_OSEM)
     public static CompassTemplate getCompassTempalte(SessionFactory sessionFactory) {
         return new CompassTemplate(findEventListener(sessionFactory).getCompass());
     }
-*/
+
     /**
      * Returns the settings of the indexing Compass instance (from the CompassGps) associated with Hibernate
      * based on the provided Hibernate session.

@@ -100,10 +100,10 @@ public class SharedPrimaryKeyAssociationTests extends TestCase {
 
         s.close();
 
-        user = (User) compassTemplate.load(User.class, userProxyWithLazyloadingAddress.getId());
+        user = compassTemplate.load(User.class, userProxyWithLazyloadingAddress.getId());
         assertEquals("username1", user.getUsername());
 
-        address = (Address) compassTemplate.load(Address.class, addressProxyWithLazyloadingUser.getId());
+        address = compassTemplate.load(Address.class, addressProxyWithLazyloadingUser.getId());
         assertEquals("12345", address.getZipcode());
 
         assertEquals(1, compassTemplate.find("username1").length());

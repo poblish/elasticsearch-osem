@@ -19,6 +19,7 @@ package org.elasticsearch.gps.device.hibernate.embedded;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,9 +29,11 @@ import javax.transaction.Synchronization;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.compass.core.Compass;
+import org.compass.core.CompassException;
 import org.compass.core.CompassSession;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.device.hibernate.lifecycle.HibernateMirrorFilter;
+import org.elasticsearch.osem.common.springframework.util.ClassUtils;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.CollectionEntry;
@@ -122,6 +125,10 @@ public class CompassEventListener implements PostDeleteEventListener, PostInsert
     public static final String COMPASS_PROCESS_COLLECTIONS = "compass.hibernate.processCollections";
 
     private static ThreadLocal<WeakHashMap<Configuration, CompassHolder>> contexts = new ThreadLocal<WeakHashMap<Configuration, CompassHolder>>();
+
+    public static Compass sharedElasticSearchTestCompass = null;	// (AGR) FIXME!
+
+    private static final long serialVersionUID = 1L;
 
     private CompassHolder compassHolder;
 
@@ -341,8 +348,7 @@ public class CompassEventListener implements PostDeleteEventListener, PostInsert
 
     private CompassHolder initCompassHolder(Configuration cfg)
     {
-	    return new CompassHolder();
-/* (AGR_OSEM)
+
         Properties compassProperties = new Properties();
         //noinspection unchecked
         Properties props = cfg.getProperties();
@@ -361,6 +367,7 @@ public class CompassEventListener implements PostDeleteEventListener, PostInsert
             }
             return null;
         }
+/* (AGR_OSEM)
         if (compassProperties.getProperty(CompassEnvironment.CONNECTION) == null) {
             if (log.isDebugEnabled()) {
                 log.debug("No Compass [" + CompassEnvironment.CONNECTION + "] property defined, disabling Compass");
@@ -412,11 +419,12 @@ public class CompassEventListener implements PostDeleteEventListener, PostInsert
             }
             return null;
         }
-
+*/
         CompassHolder compassHolder = new CompassHolder();
-        compassHolder.compassProperties = compassProperties;
 
-        compassHolder.commitBeforeCompletion = settings.getSettingAsBoolean(CompassEnvironment.Transaction.COMMIT_BEFORE_COMPLETION, false);
+	compassHolder.compassProperties = compassProperties;
+
+/*        compassHolder.commitBeforeCompletion = settings.getSettingAsBoolean(CompassEnvironment.Transaction.COMMIT_BEFORE_COMPLETION, false);
 
 
         String transactionFactory = (String) compassProperties.get(CompassEnvironment.Transaction.FACTORY);
@@ -447,7 +455,7 @@ public class CompassEventListener implements PostDeleteEventListener, PostInsert
             // with Hibernate transaction listeners
             compassHolder.hibernateControlledTransaction = false;
         }
-
+ */
         compassHolder.indexSettings = new Properties();
         for (Map.Entry entry : compassProperties.entrySet()) {
             String key = (String) entry.getKey();
@@ -459,16 +467,17 @@ public class CompassEventListener implements PostDeleteEventListener, PostInsert
         String mirrorFilterClass = compassHolder.compassProperties.getProperty(COMPASS_MIRROR_FILTER);
         if (mirrorFilterClass != null) {
             try {
-                compassHolder.mirrorFilter = (HibernateMirrorFilter) ClassUtils.forName(mirrorFilterClass, compassConfiguration.getSettings().getClassLoader()).newInstance();
+// (AGR_OSEM)      compassHolder.mirrorFilter = ClassUtils.forName(mirrorFilterClass, compassConfiguration.getSettings().getClassLoader()).newInstance();
+                compassHolder.mirrorFilter = (HibernateMirrorFilter) ClassUtils.forName(mirrorFilterClass, this.getClass().getClassLoader()).newInstance();
             } catch (Exception e) {
                 throw new CompassException("Failed to create mirror filter [" + mirrorFilterClass + "]", e);
             }
         }
 
-        compassHolder.compass = compassConfiguration.buildCompass();
+       compassHolder.compass = sharedElasticSearchTestCompass;
 
         return compassHolder;
- */
+
     }
 
     private boolean hasMappingForEntity(Class clazz, Cascade cascade)

@@ -18,7 +18,6 @@
  */
 package org.elasticsearch.osem.core.impl;
 
-import org.testng.annotations.BeforeMethod;
 import org.elasticsearch.osem.annotations.AttributeSource;
 import org.elasticsearch.osem.annotations.impl.AttributeSourceImpl;
 import org.elasticsearch.osem.property.PropertySignatureSource;

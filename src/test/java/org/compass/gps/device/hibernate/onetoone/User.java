@@ -17,9 +17,11 @@
 package org.compass.gps.device.hibernate.onetoone;
 
 import java.io.Serializable;
+import org.elasticsearch.osem.annotations.Searchable;
 
 /**
  */
+@Searchable
 public class User implements Serializable{
     private Long id;
     private String username;

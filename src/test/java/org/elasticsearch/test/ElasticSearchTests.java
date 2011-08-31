@@ -4,7 +4,7 @@
  */
 package org.elasticsearch.test;
 
-import org.elasticsearch.gps.IndexPlan;
+import org.elasticsearch.gps.device.hibernate.embedded.CompassEventListener;
 import org.compass.core.events.RebuildEventListener;
 import org.compass.core.spi.InternalCompass;
 import org.elasticsearch.client.IndicesAdminClient;
@@ -19,7 +19,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.osem.core.ObjectContext;
-import org.powermock.api.easymock.PowerMock;
 import static org.easymock.EasyMock.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -90,6 +89,8 @@ public class ElasticSearchTests
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 
 		replay(theCompass);
+
+		CompassEventListener.sharedElasticSearchTestCompass = theCompass;	// (AGR) FIXME, pretty hideous
 
 		return theCompass;
 	}
