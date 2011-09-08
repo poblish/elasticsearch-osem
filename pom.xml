@@ -99,6 +99,15 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Guava -->
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>r09</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- SLF4J 1.6.x -->
 
 		<dependency>
@@ -194,6 +203,33 @@
 			<artifactId>javaee-api</artifactId>
 			<version>5</version>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- Mark Lucene 3.3 as 'provided' -->
+
+		<dependency>
+			<artifactId>lucene-analyzers</artifactId>
+			<groupId>org.apache.lucene</groupId>
+			<version>3.3.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<artifactId>lucene-core</artifactId>
+			<groupId>org.apache.lucene</groupId>
+			<version>3.3.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<artifactId>lucene-highlighter</artifactId>
+			<groupId>org.apache.lucene</groupId>
+			<version>3.3.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<artifactId>lucene-memory</artifactId>
+			<groupId>org.apache.lucene</groupId>
+			<version>3.3.0</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
