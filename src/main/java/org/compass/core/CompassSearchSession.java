@@ -16,7 +16,19 @@
 
 package org.compass.core;
 
-import org.compass.core.config.CompassSettings;
+import java.io.Serializable;
+import org.compass.integration.InternalResource;
+import org.compass.integration.Resource;
+import org.compass.integration.Resources;
+import org.compass.integration.SearchHelperIF;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.osem.core.ObjectContext;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortOrder;
 
 /**
  * A specialized interface that provides only search and read capabilities.
@@ -37,18 +49,168 @@ import org.compass.core.config.CompassSettings;
  */
 public interface CompassSearchSession {
 
+	static class InternalSearchHelper implements SearchHelperIF
+	{
+		private final Client		m_Client;
+		private final ObjectContext	m_Ctxt;
+
+		public InternalSearchHelper( final CompassSession inSsn)
+		{
+			m_Client = inSsn.getClient();
+			m_Ctxt = inSsn.getObjectContext();
+		}
+
+		@Override
+		public SearchHits getHits( final QueryBuilder inQuery)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch( /* No extra indices */).setQuery(inQuery).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public SearchHits getHits( final QueryBuilder inQuery, final String... inIndices)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public SearchHits getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final String... inIndices)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public SearchHits getHits( final QueryBuilder inQuery, final int inMaxNum)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch( /* No extra indices */).setQuery(inQuery).setSize(inMaxNum).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public SearchHits getHits( final QueryBuilder inQuery, final int inMaxNum, final String... inIndices)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public SearchHits getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String... inIndices)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(inMaxNum).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		// @Override
+		public GetResponse getResource( final String inIdx, final String inId)
+		{
+			return m_Client.prepareGet( inIdx, null, inId).execute().actionGet();
+		}
+
+		@Override
+		public Resource getResourceOrNull( final String inIdx, final Object inId)
+		{
+			return ( inId != null) ? getResourceOrNull( inIdx, String.valueOf(inId)) : null;
+		}
+
+		@Override
+		public Resource getResourceOrNull( final String inIdx, final Serializable inId)
+		{
+			return ( inId != null) ? getResourceOrNull( inIdx, String.valueOf(inId)) : null;
+		}
+
+		@Override
+		public Resource getResourceOrNull( final String inIdx, final String inId)
+		{
+			if ( inId == null)
+			{
+				return null;
+			}
+
+			final GetResponse	theResp = getResource( inIdx, inId);
+
+			return theResp.exists() ? Resources.fromMap( m_Ctxt, theResp.getSource() ) : null;
+		}
+/*
+		@Override
+		public Resource getResourceOrNull( final Class inClass, final Serializable inId)
+		{
+			if ( inId == null)
+			{
+				return null;
+			}
+
+			final GetResponse	theResp = getResource( inIdx, inId);
+
+			return theResp.exists() ? Resources.fromMap( theResp.getSource() ) : null;
+		}
+*/
+		@Override
+		public Resource createResource( final String inIdx)
+		{
+			return new InternalResource(inIdx);
+		}
+
+		@Override
+		public SearchHits sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).addSort( inSortField, SortOrder.ASC).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public SearchHits sortedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).addSort( inSortField, SortOrder.ASC).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public SearchHits reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).addSort( inSortField, SortOrder.DESC).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public SearchHits reversedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)
+		{
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).addSort( inSortField, SortOrder.DESC).execute().actionGet();
+			return theResp.getHits();
+		}
+
+		@Override
+		public Resource getResourceOrNull( final Class<?> inIdx, final Serializable inId)
+		{
+			throw new UnsupportedOperationException("Not supported yet.");
+		}
+
+		@Override
+		public Resource getResourceOrNull( final Class<?> inIdx, final long inId)
+		{
+			throw new UnsupportedOperationException("Not supported yet.");
+		}
+	}
+
+	SearchHelperIF elasticSearch();
+
+	Client getClient();
+
+	ObjectContext getObjectContext();
+
     /**
      * Runtimes settings that apply on the session level.
      *
      * @return Runtime settings applies on the session level
      */
-    CompassSettings getSettings();
+    // (AGR_OSEM) ... CompassSettings getSettings();
     
     /**
      * When not using the {@link org.compass.core.CompassTransaction} interface, will begin a local transaction
      * instead of the configured transaction.
      */
-    CompassSearchSession useLocalTransaction();
+    // (AGR_OSEM) ... CompassSearchSession useLocalTransaction();
     
     /**
      * Returns a Resource that match the mapping specified for the defined class

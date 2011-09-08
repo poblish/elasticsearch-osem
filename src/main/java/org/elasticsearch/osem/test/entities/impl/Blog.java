@@ -32,7 +32,7 @@ import static org.elasticsearch.osem.test.entities.interfaces.FieldConstants.*;
  * @author andrewregan
  */
 @Searchable
-@Entity
+@Entity(name="Test_Blog")
 public class Blog implements BlogIF, Serializable
 {
 	private static final long serialVersionUID = 1L;

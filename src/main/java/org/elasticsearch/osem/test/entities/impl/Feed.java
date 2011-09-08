@@ -32,7 +32,7 @@ import org.elasticsearch.osem.test.entities.interfaces.FeedIF;
  * @author andrewregan
  */
 @Searchable
-@Entity
+@Entity(name="Test_Feed")
 public class Feed implements FeedIF, Serializable
 {
 	private static final long serialVersionUID = 1L;

@@ -4,10 +4,10 @@
  */
 package org.elasticsearch.osem.core;
 
+import org.compass.integration.SearchHelperIF;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.compass.core.CompassException;
-import org.compass.core.CompassSearchSession;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassSettings;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -24,19 +24,41 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
  */
 public class ElasticSearchSession implements CompassSession
 {
-	private final ObjectContext			m_Ctxt;
-	private final Client				m_Client;
-//	private final ClassIndexNamingStrategyIF		m_NamingStrategy;
+	private final ObjectContext	m_Ctxt;
+	private final Client		m_Client;
 
-	private static final ESLogger			logger = Loggers.getLogger( ElasticSearchSession.class );
+	private static final ESLogger	logger = Loggers.getLogger( ElasticSearchSession.class );
 
 	/****************************************************************************
 	****************************************************************************/
-	public ElasticSearchSession( final ObjectContext inCtxt, final Client inClient)	//, final ClassIndexNamingStrategyIF inStrategy)
+	public ElasticSearchSession( final ObjectContext inCtxt, final Client inClient)
 	{
 		m_Ctxt = inCtxt;
 		m_Client = inClient;
-//		m_NamingStrategy = inStrategy;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override
+	public Client getClient()
+	{
+		return m_Client;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override
+	public ObjectContext getObjectContext()
+	{
+		return m_Ctxt;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override
+	public SearchHelperIF elasticSearch()
+	{
+		return new InternalSearchHelper(this);
 	}
 
 	/****************************************************************************
@@ -253,12 +275,6 @@ public class ElasticSearchSession implements CompassSession
 
 	@Override
 	public CompassSettings getSettings()
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
-	public CompassSearchSession useLocalTransaction()
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

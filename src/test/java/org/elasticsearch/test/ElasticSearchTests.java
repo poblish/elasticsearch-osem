@@ -69,7 +69,7 @@ public class ElasticSearchTests
 	{
 		final InternalCompass theCompass = createMock( InternalCompass.class );
 
-		expect( theCompass.getSettings() ).andReturn(inSettings).atLeastOnce();
+		expect( theCompass.getSettings() ).andReturn(inSettings).anyTimes();
 		expect( theCompass.getObjectContext() ).andReturn(inCtxt).anyTimes();
 		expect( theCompass.getClient() ).andReturn(inClient).anyTimes();
 		expect( theCompass.openSession() ).andAnswer( new IAnswer<CompassSession>() {

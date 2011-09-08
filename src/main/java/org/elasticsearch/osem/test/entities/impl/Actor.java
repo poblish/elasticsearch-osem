@@ -31,7 +31,7 @@ import static org.elasticsearch.osem.test.entities.interfaces.FieldConstants.*;
  *
  * @author andrewregan
  */
-@Entity
+@Entity(name="Test_Actor")
 public class Actor implements ActorIF, Serializable
 {
 	private static final long serialVersionUID = 1L;
