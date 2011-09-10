@@ -25,7 +25,7 @@ import org.compass.core.config.CompassSettings;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 
 /**
  * <p>Integrates with Hibernate transaction managemnet abstraction and Compass transactions. Uses Hibernate

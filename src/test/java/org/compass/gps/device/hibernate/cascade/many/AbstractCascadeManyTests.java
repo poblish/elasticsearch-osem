@@ -13,14 +13,16 @@ import org.elasticsearch.gps.device.hibernate.lifecycle.HibernateEventListener;
 import org.elasticsearch.gps.impl.SingleCompassGps;
 import org.elasticsearch.osem.core.ObjectContextFactory;
 import org.elasticsearch.test.ElasticSearchTests;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.classic.Session;
-import org.hibernate.event.EventListeners;
-import org.hibernate.event.PostInsertEventListener;
-import org.hibernate.impl.SessionFactoryImpl;
+import org.hibernate.event.service.spi.EventListenerGroup;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
+import org.hibernate.event.spi.PostInsertEventListener;
+import org.hibernate.internal.SessionFactoryImpl;
 
 /**
  * @author Maurice Nicholson
@@ -67,11 +69,14 @@ public abstract class AbstractCascadeManyTests extends TestCase {
         compassGps.start();
 
         SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
-        EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
-        PostInsertEventListener[] listeners = eventListeners.getPostInsertEventListeners();
-        for (int i = 0; i < listeners.length; i++) {
-            if (listeners[i] instanceof HibernateEventListener) {
-                hibernateEventListener = (HibernateEventListener) listeners[i];
+
+	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+
+	EventListenerGroup<PostInsertEventListener>	theGroup = theRegistry.getEventListenerGroup( EventType.POST_INSERT );
+
+        for ( PostInsertEventListener eachListener : theGroup.listeners()) {
+            if ( eachListener instanceof HibernateEventListener) {
+                hibernateEventListener = (HibernateEventListener) eachListener;
                 break;
             }
         }

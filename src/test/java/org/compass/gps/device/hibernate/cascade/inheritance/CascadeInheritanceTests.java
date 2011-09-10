@@ -12,11 +12,11 @@ import org.elasticsearch.gps.device.hibernate.HibernateSyncTransactionFactory;
 import org.elasticsearch.gps.impl.SingleCompassGps;
 import org.elasticsearch.osem.core.ObjectContextFactory;
 import org.elasticsearch.test.ElasticSearchTests;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.classic.Session;
 
 /**
  * @author Maurice Nicholson

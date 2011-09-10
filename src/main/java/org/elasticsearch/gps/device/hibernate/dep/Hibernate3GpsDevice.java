@@ -31,21 +31,21 @@ import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.PassiveMirrorGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDeviceException;
 import org.elasticsearch.osem.common.springframework.util.ClassUtils;
-import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+
 import org.hibernate.cfg.Configuration;
-import org.hibernate.event.PostDeleteEvent;
-import org.hibernate.event.PostDeleteEventListener;
-import org.hibernate.event.PostInsertEvent;
-import org.hibernate.event.PostInsertEventListener;
-import org.hibernate.event.PostUpdateEvent;
-import org.hibernate.event.PostUpdateEventListener;
-import org.hibernate.impl.SessionFactoryImpl;
+import org.hibernate.event.spi.PostDeleteEvent;
+import org.hibernate.event.spi.PostDeleteEventListener;
+import org.hibernate.event.spi.PostInsertEvent;
+import org.hibernate.event.spi.PostInsertEventListener;
+import org.hibernate.event.spi.PostUpdateEvent;
+import org.hibernate.event.spi.PostUpdateEventListener;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 
@@ -436,7 +436,7 @@ public class Hibernate3GpsDevice extends AbstractHibernateGpsDevice implements P
                 if (isInherited(classMetadata)) {
                     String superClassEntityName = ((AbstractEntityPersister) classMetadata).getMappedSuperclass();
                     ClassMetadata superClassMetadata = (ClassMetadata) allClassMetaData.get(superClassEntityName);
-                    Class superClass = superClassMetadata.getMappedClass(EntityMode.POJO);
+                    Class superClass = superClassMetadata.getMappedClass();	// (AGR_OSEM) Was ... (EntityMode.POJO);
                     // only filter out classes that their super class has compass mappings
                     if (superClass != null && compassGps.hasMappingForEntityForIndex(superClass)) {
                         if (log.isDebugEnabled()) {

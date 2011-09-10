@@ -102,13 +102,13 @@ public class HibernateJpaEntitiesLocator implements JpaEntitiesLocator {
      */
     protected boolean shouldFilter(String entityname, ClassMetadata classMetadata, Map allClassMetaData,
                                    JpaGpsDevice device) {
-        Class<?> clazz = classMetadata.getMappedClass(EntityMode.POJO);
+        Class<?> clazz = classMetadata.getMappedClass();	// (AGR_OSEM) Was... (EntityMode.POJO);
         // if it is inherited, do not add it to the classes to index, since the "from [entity]"
         // query for the base class will return results for this class as well
         if (classMetadata.isInherited()) {
             String superClassEntityName = ((AbstractEntityPersister) classMetadata).getMappedSuperclass();
             ClassMetadata superClassMetadata = (ClassMetadata) allClassMetaData.get(superClassEntityName);
-            Class superClass = superClassMetadata.getMappedClass(EntityMode.POJO);
+            Class superClass = superClassMetadata.getMappedClass();	// (AGR_OSEM) Was... (EntityMode.POJO);
             // only filter out classes that their super class has compass mappings
             if (superClass != null
                     && ((CompassGpsInterfaceDevice) device.getGps()).hasMappingForEntityForIndex(superClass)) {

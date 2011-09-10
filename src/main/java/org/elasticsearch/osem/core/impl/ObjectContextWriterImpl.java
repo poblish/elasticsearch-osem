@@ -106,7 +106,7 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
         } else {
 	    if ( signature.getType() == null)	// (AGR)
 	    {
-                   if ( value instanceof org.hibernate.collection.PersistentSet)
+                   if ( value instanceof org.hibernate.collection.internal.PersistentSet)
 		    {
 			   //  org.hibernate.collection.PersistentSet	x = (org.hibernate.collection.PersistentSet) value;
 

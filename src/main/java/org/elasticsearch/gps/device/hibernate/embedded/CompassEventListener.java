@@ -36,9 +36,26 @@ import org.elasticsearch.gps.device.hibernate.lifecycle.HibernateMirrorFilter;
 import org.elasticsearch.osem.common.springframework.util.ClassUtils;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.engine.CollectionEntry;
-import org.hibernate.engine.EntityEntry;
-import org.hibernate.event.*;
+import org.hibernate.engine.spi.CollectionEntry;
+import org.hibernate.engine.spi.EntityEntry;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.event.spi.AbstractCollectionEvent;
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.PostCollectionRecreateEvent;
+import org.hibernate.event.spi.PostCollectionRecreateEventListener;
+import org.hibernate.event.spi.PostCollectionRemoveEvent;
+import org.hibernate.event.spi.PostCollectionRemoveEventListener;
+import org.hibernate.event.spi.PostCollectionUpdateEvent;
+import org.hibernate.event.spi.PostCollectionUpdateEventListener;
+import org.hibernate.event.spi.PostDeleteEvent;
+import org.hibernate.event.spi.PostDeleteEventListener;
+import org.hibernate.event.spi.PostInsertEvent;
+import org.hibernate.event.spi.PostInsertEventListener;
+import org.hibernate.event.spi.PostUpdateEvent;
+import org.hibernate.event.spi.PostUpdateEventListener;
+import org.hibernate.integrator.spi.Integrator;
+import org.hibernate.service.spi.SessionFactoryServiceRegistry;
+
 
 /**
  * An Hibernate event listener allowing to run Compass embedded within Hibernate. The embedded mode
@@ -110,7 +127,7 @@ import org.hibernate.event.*;
  */
 public class CompassEventListener implements PostDeleteEventListener, PostInsertEventListener, PostUpdateEventListener,
         PostCollectionRecreateEventListener, PostCollectionRemoveEventListener, PostCollectionUpdateEventListener,
-        Initializable {
+        Integrator {
 
     public final static Log log = LogFactory.getLog(CompassEventListener.class);
 
@@ -133,10 +150,6 @@ public class CompassEventListener implements PostDeleteEventListener, PostInsert
     private CompassHolder compassHolder;
 
     private boolean processCollections = true;
-
-    public void initialize(Configuration cfg) {
-        compassHolder = getCompassHolder(cfg);
-    }
 
     public Compass getCompass() {
         return this.compassHolder.compass;
@@ -497,6 +510,19 @@ public class CompassEventListener implements PostDeleteEventListener, PostInsert
 	return false;
     }
 
+	// Hibernate 4
+	@Override
+	public void integrate( final Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry)
+	{
+		compassHolder = getCompassHolder(configuration);
+	}
+
+	// Hibernate 4
+	@Override
+	public void disintegrate( final SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry)
+	{
+		// NOOP
+	}
 
     private class CompassHolder {
 

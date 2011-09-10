@@ -27,7 +27,7 @@ import org.hibernate.EntityMode;
 import org.hibernate.Interceptor;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.transaction.TransactionFactory;
+import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.type.Type;
 
 /**

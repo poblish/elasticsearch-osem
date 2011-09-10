@@ -32,15 +32,16 @@ import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDeviceException;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
-import org.hibernate.engine.CollectionEntry;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.event.EventSource;
-import org.hibernate.event.PostDeleteEvent;
-import org.hibernate.event.PostDeleteEventListener;
-import org.hibernate.event.PostInsertEvent;
-import org.hibernate.event.PostInsertEventListener;
-import org.hibernate.event.PostUpdateEvent;
-import org.hibernate.event.PostUpdateEventListener;
+import org.hibernate.engine.spi.CollectionEntry;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.PostDeleteEvent;
+import org.hibernate.event.spi.PostDeleteEventListener;
+import org.hibernate.event.spi.PostInsertEvent;
+import org.hibernate.event.spi.PostInsertEventListener;
+import org.hibernate.event.spi.PostUpdateEvent;
+import org.hibernate.event.spi.PostUpdateEventListener;
 
 /**
  * A default implementation for Hibernate lifecycle callbacks.
@@ -207,8 +208,10 @@ public class HibernateEventListener implements PostInsertEventListener, PostUpda
 
     protected void doInsert(CompassSession session, PostInsertEvent postInsertEvent, Object entity, CompassGpsInterfaceDevice compassGps) {
         if (marshallIds) {
+            SessionImplementor hibernateSession = ((SessionImplementor) postInsertEvent.getSession());	// (AGR_OSEM) Hib4
+
             Serializable id = postInsertEvent.getId();
-            postInsertEvent.getPersister().setIdentifier(entity, id, postInsertEvent.getSession().getEntityMode());
+            postInsertEvent.getPersister().setIdentifier(entity, id, hibernateSession);	// (AGR_OSEM) Hib4 ... , postInsertEvent.getSession().getEntityMode());
         }
         Collection<CollectionEntry> collectionsBefore = null;
         if (processCollections) {

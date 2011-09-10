@@ -18,14 +18,17 @@ package org.elasticsearch.gps.device.hibernate.lifecycle;
 
 import java.util.ArrayList;
 
+import java.util.Collection;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDeviceException;
 import org.hibernate.SessionFactory;
-import org.hibernate.event.EventListeners;
-import org.hibernate.event.PostCollectionRecreateEventListener;
-import org.hibernate.event.PostCollectionRemoveEventListener;
-import org.hibernate.event.PostCollectionUpdateEventListener;
-import org.hibernate.impl.SessionFactoryImpl;
+import org.hibernate.event.service.spi.EventListenerGroup;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
+import org.hibernate.event.spi.PostCollectionRecreateEventListener;
+import org.hibernate.event.spi.PostCollectionRemoveEventListener;
+import org.hibernate.event.spi.PostCollectionUpdateEventListener;
+import org.hibernate.internal.SessionFactoryImpl;
 
 /**
  * @author kimchy
@@ -46,34 +49,60 @@ public class DefaultHibernateEntityCollectionLifecycleInjector extends DefaultHi
         super.injectLifecycle(sessionFactory, device);
 
         SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
-        EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
+	// (AGR_OSEM) Hib4 ... EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
+
+	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
 
         if (registerPostCommitListeneres) {
             return;
         }
 
         if (eventListener instanceof PostCollectionRecreateEventListener) {
-            PostCollectionRecreateEventListener[] listeners = eventListeners.getPostCollectionRecreateEventListeners();
+	    EventListenerGroup<PostCollectionRecreateEventListener>	theGroup = theRegistry.getEventListenerGroup( EventType.POST_COLLECTION_RECREATE );
+
+	    Collection<PostCollectionRecreateEventListener>	theListeners = new ArrayList<PostCollectionRecreateEventListener>();
+	    for ( PostCollectionRecreateEventListener eachListener : theGroup.listeners())
+	    {
+		    theListeners.add(eachListener);
+	    }
+
+            PostCollectionRecreateEventListener[] listeners = theListeners.toArray( new PostCollectionRecreateEventListener[ theListeners.size() ] );
             PostCollectionRecreateEventListener[] tempListeners = new PostCollectionRecreateEventListener[listeners.length + 1];
             System.arraycopy(listeners, 0, tempListeners, 0, listeners.length);
             tempListeners[listeners.length] = (PostCollectionRecreateEventListener) eventListener;
-            eventListeners.setPostCollectionRecreateEventListeners(tempListeners);
+            // (AGR_OSEM) Hib4 ... eventListeners.setPostCollectionRecreateEventListeners(tempListeners);
         }
 
         if (eventListener instanceof PostCollectionRemoveEventListener) {
-            PostCollectionRemoveEventListener[] listeners = eventListeners.getPostCollectionRemoveEventListeners();
+	    EventListenerGroup<PostCollectionRemoveEventListener>	theGroup = theRegistry.getEventListenerGroup( EventType.POST_COLLECTION_REMOVE );
+
+	    Collection<PostCollectionRemoveEventListener>	theListeners = new ArrayList<PostCollectionRemoveEventListener>();
+	    for ( PostCollectionRemoveEventListener eachListener : theGroup.listeners())
+	    {
+		    theListeners.add(eachListener);
+	    }
+
+            PostCollectionRemoveEventListener[] listeners = theListeners.toArray( new PostCollectionRemoveEventListener[ theListeners.size() ] );
             PostCollectionRemoveEventListener[] tempListeners = new PostCollectionRemoveEventListener[listeners.length + 1];
             System.arraycopy(listeners, 0, tempListeners, 0, listeners.length);
             tempListeners[listeners.length] = (PostCollectionRemoveEventListener) eventListener;
-            eventListeners.setPostCollectionRemoveEventListeners(tempListeners);
+            // (AGR_OSEM) Hib4 ... eventListeners.setPostCollectionRemoveEventListeners(tempListeners);
         }
 
         if (eventListener instanceof PostCollectionUpdateEventListener) {
-            PostCollectionUpdateEventListener[] listeners = eventListeners.getPostCollectionUpdateEventListeners();
+	    EventListenerGroup<PostCollectionUpdateEventListener>	theGroup = theRegistry.getEventListenerGroup( EventType.POST_COLLECTION_UPDATE );
+
+	    Collection<PostCollectionUpdateEventListener>	theListeners = new ArrayList<PostCollectionUpdateEventListener>();
+	    for ( PostCollectionUpdateEventListener eachListener : theGroup.listeners())
+	    {
+		    theListeners.add(eachListener);
+	    }
+
+            PostCollectionUpdateEventListener[] listeners = theListeners.toArray( new PostCollectionUpdateEventListener[ theListeners.size() ] );
             PostCollectionUpdateEventListener[] tempListeners = new PostCollectionUpdateEventListener[listeners.length + 1];
             System.arraycopy(listeners, 0, tempListeners, 0, listeners.length);
             tempListeners[listeners.length] = (PostCollectionUpdateEventListener) eventListener;
-            eventListeners.setPostCollectionUpdateEventListeners(tempListeners);
+            // (AGR_OSEM) Hib4 ... eventListeners.setPostCollectionUpdateEventListeners(tempListeners);
         }
     }
 
@@ -85,7 +114,11 @@ public class DefaultHibernateEntityCollectionLifecycleInjector extends DefaultHi
         }
 
         SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
-        EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
+	// (AGR_OSEM) Hib4 ... EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
+
+	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+
+/* (AGR_OSEM) Hib4
 
         PostCollectionRecreateEventListener[] postCollectionRecreateEventListeners = eventListeners.getPostCollectionRecreateEventListeners();
         ArrayList<PostCollectionRecreateEventListener> tempPostCollectionRecreateEventListeners = new ArrayList<PostCollectionRecreateEventListener>();
@@ -94,7 +127,8 @@ public class DefaultHibernateEntityCollectionLifecycleInjector extends DefaultHi
                 tempPostCollectionRecreateEventListeners.add(postCollectionRecreateEventListener);
             }
         }
-        eventListeners.setPostCollectionRecreateEventListeners(tempPostCollectionRecreateEventListeners.toArray(new PostCollectionRecreateEventListener[tempPostCollectionRecreateEventListeners.size()]));
+
+        // (AGR_OSEM) Hib4 ... eventListeners.setPostCollectionRecreateEventListeners(tempPostCollectionRecreateEventListeners.toArray(new PostCollectionRecreateEventListener[tempPostCollectionRecreateEventListeners.size()]));
 
         PostCollectionUpdateEventListener[] postCollectionUpdateEventListeners = eventListeners.getPostCollectionUpdateEventListeners();
         ArrayList<PostCollectionUpdateEventListener> tempPostCollectionUpdateEventListeners = new ArrayList<PostCollectionUpdateEventListener>();
@@ -103,7 +137,8 @@ public class DefaultHibernateEntityCollectionLifecycleInjector extends DefaultHi
                 tempPostCollectionUpdateEventListeners.add(postCollectionUpdateEventListener);
             }
         }
-        eventListeners.setPostCollectionUpdateEventListeners(tempPostCollectionUpdateEventListeners.toArray(new PostCollectionUpdateEventListener[tempPostCollectionUpdateEventListeners.size()]));
+
+        // (AGR_OSEM) Hib4 ... eventListeners.setPostCollectionUpdateEventListeners(tempPostCollectionUpdateEventListeners.toArray(new PostCollectionUpdateEventListener[tempPostCollectionUpdateEventListeners.size()]));
 
         PostCollectionRemoveEventListener[] postCollectionRemoveEventListeners = eventListeners.getPostCollectionRemoveEventListeners();
         ArrayList<PostCollectionRemoveEventListener> tempPostCollectionRemoveEventListeners = new ArrayList<PostCollectionRemoveEventListener>();
@@ -112,8 +147,8 @@ public class DefaultHibernateEntityCollectionLifecycleInjector extends DefaultHi
                 tempPostCollectionRemoveEventListeners.add(postCollectionRemoveEventListener);
             }
         }
-        eventListeners.setPostCollectionRemoveEventListeners(tempPostCollectionRemoveEventListeners.toArray(new PostCollectionRemoveEventListener[tempPostCollectionRemoveEventListeners.size()]));
-
+*/
+        // (AGR_OSEM) Hib4 ... eventListeners.setPostCollectionRemoveEventListeners(tempPostCollectionRemoveEventListeners.toArray(new PostCollectionRemoveEventListener[tempPostCollectionRemoveEventListeners.size()]));
 
         eventListener = null;
     }

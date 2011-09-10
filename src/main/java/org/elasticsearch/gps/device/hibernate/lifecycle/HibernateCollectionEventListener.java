@@ -25,15 +25,15 @@ import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDeviceException;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
-import org.hibernate.engine.CollectionEntry;
-import org.hibernate.engine.EntityEntry;
-import org.hibernate.event.AbstractCollectionEvent;
-import org.hibernate.event.PostCollectionRecreateEvent;
-import org.hibernate.event.PostCollectionRecreateEventListener;
-import org.hibernate.event.PostCollectionRemoveEvent;
-import org.hibernate.event.PostCollectionRemoveEventListener;
-import org.hibernate.event.PostCollectionUpdateEvent;
-import org.hibernate.event.PostCollectionUpdateEventListener;
+import org.hibernate.engine.spi.CollectionEntry;
+import org.hibernate.engine.spi.EntityEntry;
+import org.hibernate.event.spi.AbstractCollectionEvent;
+import org.hibernate.event.spi.PostCollectionRecreateEvent;
+import org.hibernate.event.spi.PostCollectionRecreateEventListener;
+import org.hibernate.event.spi.PostCollectionRemoveEvent;
+import org.hibernate.event.spi.PostCollectionRemoveEventListener;
+import org.hibernate.event.spi.PostCollectionUpdateEvent;
+import org.hibernate.event.spi.PostCollectionUpdateEventListener;
 
 /**
  * @author kimchy

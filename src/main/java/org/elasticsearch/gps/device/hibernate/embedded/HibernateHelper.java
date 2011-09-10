@@ -23,9 +23,11 @@ import org.compass.core.CompassTemplate;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.SessionImplementor;
-import org.hibernate.event.PostInsertEventListener;
-import org.hibernate.impl.SessionFactoryImpl;
+import org.hibernate.event.service.spi.EventListenerGroup;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
+import org.hibernate.event.spi.PostInsertEventListener;
+import org.hibernate.internal.SessionFactoryImpl;
 
 /**
  * A helper class used when working with embedded Compass within Hibernate. Allows for access to the
@@ -107,8 +109,8 @@ public abstract class HibernateHelper {
 */
     private static CompassEventListener findEventListener(SessionFactory sessionFactory) {
         if (sessionFactory instanceof SessionFactoryImpl) {
-            PostInsertEventListener[] listeners = ((SessionFactoryImpl) sessionFactory).getEventListeners().getPostInsertEventListeners();
-            return findEventListener(listeners);
+	    EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+            return findEventListener( theRegistry.getEventListenerGroup( EventType.POST_INSERT ) );
         } else {
             Session session = sessionFactory.openSession();
             try {
@@ -120,12 +122,12 @@ public abstract class HibernateHelper {
     }
 
     private static CompassEventListener findEventListener(Session session) {
-        PostInsertEventListener[] listeners = ((SessionImplementor) session).getListeners().getPostInsertEventListeners();
-        return findEventListener(listeners);
+	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+        return findEventListener( theRegistry.getEventListenerGroup( EventType.POST_INSERT ) );
     }
 
-    private static CompassEventListener findEventListener(PostInsertEventListener[] listeners) {
-        for (PostInsertEventListener candidate : listeners) {
+    private static CompassEventListener findEventListener( EventListenerGroup<PostInsertEventListener> listeners) {
+        for (PostInsertEventListener candidate : listeners.listeners()) {
             if (candidate instanceof CompassEventListener) {
                 return (CompassEventListener) candidate;
             }

@@ -16,21 +16,19 @@
 
 package org.elasticsearch.gps.device.jpa.lifecycle;
 
-import java.util.ArrayList;
 import javax.persistence.EntityManagerFactory;
 
 import org.elasticsearch.gps.device.jpa.AbstractDeviceJpaEntityListener;
 import org.elasticsearch.gps.device.jpa.JpaGpsDevice;
 import org.elasticsearch.gps.device.jpa.JpaGpsDeviceException;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
-import org.hibernate.event.EventListeners;
-import org.hibernate.event.PostDeleteEvent;
-import org.hibernate.event.PostDeleteEventListener;
-import org.hibernate.event.PostInsertEvent;
-import org.hibernate.event.PostInsertEventListener;
-import org.hibernate.event.PostUpdateEvent;
-import org.hibernate.event.PostUpdateEventListener;
-import org.hibernate.impl.SessionFactoryImpl;
+import org.hibernate.event.spi.PostDeleteEvent;
+import org.hibernate.event.spi.PostDeleteEventListener;
+import org.hibernate.event.spi.PostInsertEvent;
+import org.hibernate.event.spi.PostInsertEventListener;
+import org.hibernate.event.spi.PostUpdateEvent;
+import org.hibernate.event.spi.PostUpdateEventListener;
+import org.hibernate.internal.SessionFactoryImpl;
 
 /**
  * Injects lifecycle listeners directly into Hibernate for mirroring operations.
@@ -99,6 +97,9 @@ public class HibernateJpaEntityLifecycleInjector implements JpaEntityLifecycleIn
         HibernateEntityManagerFactory hibernateEntityManagerFactory =
                 (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactoryImpl sessionFactory = (SessionFactoryImpl) hibernateEntityManagerFactory.getSessionFactory();
+
+/* (AGR_OSEM) Hib4
+
         EventListeners eventListeners = sessionFactory.getEventListeners();
 
         Object hibernateEventListener = doCreateListener(device);
@@ -153,12 +154,16 @@ public class HibernateJpaEntityLifecycleInjector implements JpaEntityLifecycleIn
                 eventListeners.setPostDeleteEventListeners(tempPostDeleteEventListeners);
             }
         }
+ */
     }
 
     public void removeLifecycle(EntityManagerFactory entityManagerFactory, JpaGpsDevice device) throws JpaGpsDeviceException {
         HibernateEntityManagerFactory hibernateEntityManagerFactory =
                 (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactoryImpl sessionFactory = (SessionFactoryImpl) hibernateEntityManagerFactory.getSessionFactory();
+
+/* (AGR_OSEM) Hib4
+
         EventListeners eventListeners = sessionFactory.getEventListeners();
 
         PostInsertEventListener[] postInsertEventListeners;
@@ -214,6 +219,7 @@ public class HibernateJpaEntityLifecycleInjector implements JpaEntityLifecycleIn
         } else {
             eventListeners.setPostDeleteEventListeners(tempPostDeleteEventListeners.toArray(new PostDeleteEventListener[tempPostDeleteEventListeners.size()]));
         }
+*/
     }
 
     protected Object doCreateListener(JpaGpsDevice device) {

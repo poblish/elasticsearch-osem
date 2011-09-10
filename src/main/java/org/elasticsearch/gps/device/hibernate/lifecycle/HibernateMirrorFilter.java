@@ -16,10 +16,10 @@
 
 package org.elasticsearch.gps.device.hibernate.lifecycle;
 
-import org.hibernate.event.AbstractCollectionEvent;
-import org.hibernate.event.PostDeleteEvent;
-import org.hibernate.event.PostInsertEvent;
-import org.hibernate.event.PostUpdateEvent;
+import org.hibernate.event.spi.AbstractCollectionEvent;
+import org.hibernate.event.spi.PostDeleteEvent;
+import org.hibernate.event.spi.PostInsertEvent;
+import org.hibernate.event.spi.PostUpdateEvent;
 
 /**
  * Allows to hook filtering of object during the mirroring process.

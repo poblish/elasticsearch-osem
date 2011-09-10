@@ -29,10 +29,8 @@ import org.compass.core.CompassSession;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.gps.spi.CompassGpsInterfaceDevice;
 import org.elasticsearch.osem.common.springframework.util.Assert;
-import org.elasticsearch.osem.core.ElasticSearchSession;
-import org.hibernate.EntityMode;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.event.EventSource;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.event.spi.EventSource;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.type.CollectionType;
@@ -99,7 +97,7 @@ public abstract class HibernateEventListenerUtils {
 			for (Iterator iter = sessionFactory.getAllClassMetadata().values().iterator(); iter.hasNext();)
 			{
 				ClassMetadata temp = (ClassMetadata) iter.next();
-				if (entity.getClass().equals(temp.getMappedClass(EntityMode.POJO)))
+				if (entity.getClass().equals(temp.getMappedClass()))	// (AGR_OSEM) Was ... (EntityMode.POJO)))
 				{
 					classMetadata = temp;
 					break;
@@ -142,7 +140,7 @@ public abstract class HibernateEventListenerUtils {
 */
 
 			// property value is not null?
-			Object propertyValue = persister.getPropertyValue(entity, name, EntityMode.POJO);
+			Object propertyValue = persister.getPropertyValue(entity, name);	// (AGR_OSEM) Was ... , EntityMode.POJO);
 			if (propertyValue == null)
 			{
 				continue;

@@ -28,8 +28,8 @@ import org.hibernate.FlushMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.TransactionException;
-import org.hibernate.engine.SessionImplementor;
-import org.hibernate.transaction.TransactionFactory;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.transaction.spi.TransactionFactory;
 
 /**
  * @author kimchy

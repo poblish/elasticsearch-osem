@@ -8,11 +8,7 @@ package org.elasticsearch.osem.test.entities.impl;
  *
  * @author andrewregan
  */
-import org.elasticsearch.osem.test.entities.interfaces.ActorIF;
-import org.elasticsearch.osem.test.entities.interfaces.ActorResourceIF;
-import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
-import org.elasticsearch.osem.test.entities.interfaces.BlogIF;
-import org.elasticsearch.osem.test.entities.interfaces.FeedIF;
+
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collection;
@@ -21,8 +17,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -32,10 +30,15 @@ import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
-import org.hibernate.annotations.CollectionOfElements;
+
 import org.elasticsearch.osem.annotations.Index;
-import org.elasticsearch.osem.annotations.Searchable;
 import org.elasticsearch.osem.annotations.Indexable;
+import org.elasticsearch.osem.annotations.Searchable;
+import org.elasticsearch.osem.test.entities.interfaces.ActorIF;
+import org.elasticsearch.osem.test.entities.interfaces.ActorResourceIF;
+import org.elasticsearch.osem.test.entities.interfaces.ArticleIF;
+import org.elasticsearch.osem.test.entities.interfaces.BlogIF;
+import org.elasticsearch.osem.test.entities.interfaces.FeedIF;
 import static org.elasticsearch.osem.test.entities.interfaces.FieldConstants.*;
 
 /**
@@ -88,7 +91,7 @@ public class TestArticle implements ArticleIF, Serializable
 
 	////////////////////////////////////////////////////////////////////////////////////
 
-	@CollectionOfElements
+	@ElementCollection
 	@JoinTable(name="Article_ContentURLs")
 	@Column(name="linkURLs", nullable=false)
 	@Indexable(indexName="articleLinkURLs", index=Index.NOT_ANALYZED)

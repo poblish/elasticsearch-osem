@@ -17,22 +17,20 @@
 package org.elasticsearch.gps.device.jpa.lifecycle;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import javax.persistence.EntityManagerFactory;
 
 import org.elasticsearch.gps.device.jpa.JpaGpsDevice;
 import org.elasticsearch.gps.device.jpa.JpaGpsDeviceException;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
-import org.hibernate.engine.EntityEntry;
-import org.hibernate.event.AbstractCollectionEvent;
-import org.hibernate.event.EventListeners;
-import org.hibernate.event.PostCollectionRecreateEvent;
-import org.hibernate.event.PostCollectionRecreateEventListener;
-import org.hibernate.event.PostCollectionRemoveEvent;
-import org.hibernate.event.PostCollectionRemoveEventListener;
-import org.hibernate.event.PostCollectionUpdateEvent;
-import org.hibernate.event.PostCollectionUpdateEventListener;
-import org.hibernate.impl.SessionFactoryImpl;
+import org.hibernate.engine.spi.EntityEntry;
+import org.hibernate.event.spi.AbstractCollectionEvent;
+import org.hibernate.event.spi.PostCollectionRecreateEvent;
+import org.hibernate.event.spi.PostCollectionRecreateEventListener;
+import org.hibernate.event.spi.PostCollectionRemoveEvent;
+import org.hibernate.event.spi.PostCollectionRemoveEventListener;
+import org.hibernate.event.spi.PostCollectionUpdateEvent;
+import org.hibernate.event.spi.PostCollectionUpdateEventListener;
+import org.hibernate.internal.SessionFactoryImpl;
 
 /**
  * @author kimchy
@@ -107,6 +105,9 @@ public class HibernateJpaEntityCollectionLifecycleInjector extends HibernateJpaE
         HibernateEntityManagerFactory hibernateEntityManagerFactory =
                 (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactoryImpl sessionFactory = (SessionFactoryImpl) hibernateEntityManagerFactory.getSessionFactory();
+
+/* (AGR_OSEM) Hib4
+
         EventListeners eventListeners = sessionFactory.getEventListeners();
 
         if (eventListener instanceof PostCollectionRecreateEventListener) {
@@ -132,6 +133,7 @@ public class HibernateJpaEntityCollectionLifecycleInjector extends HibernateJpaE
             tempListeners[listeners.length] = (PostCollectionUpdateEventListener) eventListener;
             eventListeners.setPostCollectionUpdateEventListeners(tempListeners);
         }
+ */
     }
 
     public void removeLifecycle(EntityManagerFactory entityManagerFactory, JpaGpsDevice device) throws JpaGpsDeviceException {
@@ -144,7 +146,10 @@ public class HibernateJpaEntityCollectionLifecycleInjector extends HibernateJpaE
         HibernateEntityManagerFactory hibernateEntityManagerFactory =
                 (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactoryImpl sessionFactory = (SessionFactoryImpl) hibernateEntityManagerFactory.getSessionFactory();
-        EventListeners eventListeners = sessionFactory.getEventListeners();
+
+/* (AGR_OSEM) Hib4
+
+	EventListeners eventListeners = sessionFactory.getEventListeners();
 
         PostCollectionRecreateEventListener[] postCollectionRecreateEventListeners = eventListeners.getPostCollectionRecreateEventListeners();
         ArrayList<PostCollectionRecreateEventListener> tempPostCollectionRecreateEventListeners = new ArrayList<PostCollectionRecreateEventListener>();
@@ -172,7 +177,7 @@ public class HibernateJpaEntityCollectionLifecycleInjector extends HibernateJpaE
             }
         }
         eventListeners.setPostCollectionRemoveEventListeners(tempPostCollectionRemoveEventListeners.toArray(new PostCollectionRemoveEventListener[tempPostCollectionRemoveEventListeners.size()]));
-
+*/
         eventListener = null;
     }
 
