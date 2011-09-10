@@ -113,9 +113,6 @@
     <persistence-unit name="hibernate" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
 	<non-jta-data-source>java:jboss/OsemHibResource</non-jta-data-source>
-        <class>org.compass.gps.device.jpa.model.Simple</class>
-        <class>org.compass.gps.device.jpa.model.SimpleBase</class>
-        <class>org.compass.gps.device.jpa.model.SimpleExtend</class>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
@@ -131,9 +128,6 @@
     <persistence-unit name="embeddedhibernate" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
 	<non-jta-data-source>java:jboss/OsemEmbeddedHibResource</non-jta-data-source>
-        <class>org.compass.gps.device.jpa.model.Simple</class>
-        <class>org.compass.gps.device.jpa.model.SimpleBase</class>
-        <class>org.compass.gps.device.jpa.model.SimpleExtend</class>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
