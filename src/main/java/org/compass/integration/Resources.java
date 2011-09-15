@@ -18,7 +18,7 @@ public class Resources
 	****************************************************************************/
 	public static Resource fromHit(final SearchHit inHit)
 	{
-		return fromMap( null, inHit.getSource() );
+		return new InternalResource( inHit.getIndex(), inHit.getId()).setSourceProperties( inHit.getSource() );
 	}
 
 	/****************************************************************************

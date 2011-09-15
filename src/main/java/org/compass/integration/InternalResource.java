@@ -15,6 +15,8 @@ import org.elasticsearch.osem.core.ObjectContext;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import org.elasticsearch.common.base.Objects;
 
 /**
  *
@@ -31,7 +33,6 @@ public class InternalResource implements Resource
 
 	/****************************************************************************
 	****************************************************************************/
-	@SuppressWarnings("unchecked")
 	public InternalResource( final ObjectContext inCtxt, final Map<String,Object> inMap)
 	{
 	//	System.out.println(" = " + inMap);
@@ -43,20 +44,7 @@ public class InternalResource implements Resource
 		m_Index = (String) inMap.get("index");
 	//	m_Properties = (List<Property>) inMap.get("properties");
 
-		for ( HashMap<String,String> eachMap : ((List<HashMap<String,String>>) inMap.get("properties")))
-		{
-			m_Properties.add( new InternalProperty( eachMap.get("key"), eachMap.get("value")) );
-		}
-/*		try
-		{
-			m_Index = inCtxt.getType( Class.forName((String) inMap.get("_class")) );
-		}
-		catch (ClassNotFoundException ex)
-		{
-			throw new RuntimeException(ex);	// (AGR) Yuk!
-		}
-*/
-		// throw new UnsupportedOperationException("Not supported yet.");
+		setSourceProperties(inMap);
 	}
 
 	/****************************************************************************
@@ -72,6 +60,31 @@ public class InternalResource implements Resource
 	{
 		m_Index = inIdx;
 		m_Id = inId;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	public final InternalResource setSourceProperties( final Map<String,Object> inMap)
+	{
+		@SuppressWarnings("unchecked")
+		final List<HashMap<String,String>>	theOsemProps = ((List<HashMap<String,String>>) inMap.get("properties"));
+
+		if ( theOsemProps != null)
+		{
+			for ( final HashMap<String,String> eachMap : theOsemProps)
+			{
+				m_Properties.add( new InternalProperty( eachMap.get("key"), eachMap.get("value")) );
+			}
+		}
+
+		for ( Entry<String,Object> eachEntry : inMap.entrySet())
+		{
+			if (eachEntry.getKey().equals("properties"))	continue;
+
+			m_Properties.add( new InternalProperty( eachEntry.getKey(), String.valueOf( eachEntry.getValue() )) );
+		}
+
+		return this;
 	}
 
 	/****************************************************************************
@@ -224,5 +237,15 @@ public class InternalResource implements Resource
 		removeProperties(inName);
 
 		return addProperty( inName, inValue);
+	}
+
+	@Override
+	public String toString()
+	{
+		return Objects.toStringHelper("Resource")
+				.add( "id", m_Id)
+				.add( "idx", m_Index)
+				.add( "props", m_Properties)
+				.toString();
 	}
 }

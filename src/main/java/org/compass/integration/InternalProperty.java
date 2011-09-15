@@ -4,6 +4,7 @@
  */
 package org.compass.integration;
 
+import com.google.common.base.Objects;
 import org.elasticsearch.osem.annotations.Searchable;
 
 /**
@@ -56,5 +57,16 @@ public class InternalProperty implements Property
 	public void setValue( final String inVal)
 	{
 		m_Value = inVal;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@Override
+	public String toString()
+	{
+		return Objects.toStringHelper("Prop")
+				.add( "k", m_Key)
+				.add( "v", m_Value)
+				.toString();
 	}
 }
