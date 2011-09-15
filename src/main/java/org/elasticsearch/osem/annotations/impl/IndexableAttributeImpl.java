@@ -18,6 +18,7 @@
  */
 package org.elasticsearch.osem.annotations.impl;
 
+import com.google.common.base.Objects;
 import org.elasticsearch.osem.annotations.Index;
 import org.elasticsearch.osem.annotations.IndexableAttribute;
 import org.elasticsearch.osem.annotations.TermVector;
@@ -175,5 +176,11 @@ public class IndexableAttributeImpl implements IndexableAttribute {
     public IndexableAttributeImpl setPrecisionStep(Integer precisionStep) {
         this.precisionStep = precisionStep;
         return this;
+    }
+    
+    @Override
+    public String toString()
+    {
+        return Objects.toStringHelper("IndexableAttribute").add("name", indexName).add("index", index).add("stored", stored).toString();
     }
 }
