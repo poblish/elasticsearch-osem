@@ -12,6 +12,12 @@ import java.util.Map;
  */
 public interface Resource
 {
+	int getIntValue(String name);
+	long getLongValue(String name);
+	float getFloatValue(String name);
+	double getDoubleValue(String name);
+	boolean getBooleanValue(String name);
+
 	void removeProperties( final String inName);
 	void removeProperty( final String inName);
 

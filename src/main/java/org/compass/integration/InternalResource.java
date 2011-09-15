@@ -203,6 +203,51 @@ public class InternalResource implements Resource
 		return null;
 	}
 
+	/****************************************************************************
+	    (AGR) FIXME. A bit dumb - can't we have default values, etc.?
+	****************************************************************************/
+	@Override
+	public int getIntValue( final String inName)
+	{
+		return Integer.parseInt( getValue(inName) );
+	}
+
+	/****************************************************************************
+	    (AGR) FIXME. A bit dumb - can't we have default values, etc.?
+	****************************************************************************/
+	@Override
+	public long getLongValue( final String inName)
+	{
+		return Long.parseLong( getValue(inName) );
+	}
+
+	/****************************************************************************
+	    (AGR) FIXME. A bit dumb - can't we have default values, etc.?
+	****************************************************************************/
+	@Override
+	public float getFloatValue( final String inName)
+	{
+		return Float.parseFloat( getValue(inName) );
+	}
+
+	/****************************************************************************
+	    (AGR) FIXME. A bit dumb - can't we have default values, etc.?
+	****************************************************************************/
+	@Override
+	public double getDoubleValue( final String inName)
+	{
+		return Double.parseDouble( getValue(inName) );
+	}
+
+	/****************************************************************************
+	    (AGR) FIXME. A bit dumb - can't we have default values, etc.?
+	****************************************************************************/
+	@Override
+	public boolean getBooleanValue( final String inName)
+	{
+		return Boolean.parseBoolean( getValue(inName) );
+	}
+
 	@Override
 	public String[] getValues( final String inName)
 	{
