@@ -41,7 +41,7 @@ public class CascadeInheritanceTests extends TestCase {
 //                .configure("/org/compass/gps/device/hibernate/cascade/inheritance/compass.cfg.xml");
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());	// cpConf.buildCompass();
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();

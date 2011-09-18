@@ -4,19 +4,22 @@
  */
 package org.elasticsearch.osem.core;
 
-import org.compass.integration.SearchHelperIF;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
+import java.io.IOException;
+
 import org.compass.core.CompassException;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassSettings;
+import org.compass.integration.SearchHelperIF;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import static org.elasticsearch.index.query.QueryBuilders.*;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 
 /**
  *
@@ -83,8 +86,18 @@ public class ElasticSearchSession implements CompassSession
 		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
 	//	final String		theIdx = m_NamingStrategy.toIndexName( inEntity.getClass() );
 
+		final XContentBuilder	theBuilder = m_Ctxt.write(inEntity);
+
+		try
+		{
+			System.out.println("create() for " + inEntity + " : " + theBuilder.string());
+		}
+		catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
 		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx.toLowerCase(), "xxx", theId)
-								.setSource( m_Ctxt.write(inEntity) )
+								.setSource(theBuilder)
 								.execute()
 								.actionGet();
 
@@ -113,8 +126,18 @@ public class ElasticSearchSession implements CompassSession
 
 		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
 
+		final XContentBuilder	theBuilder = m_Ctxt.write(inEntity);
+
+		try
+		{
+			System.out.println("create() for " + inEntity + " : " + theBuilder.string());
+		}
+		catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
 		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx, "xxx", theId)
-								.setSource( m_Ctxt.write(inEntity) )
+								.setSource(theBuilder)
 								.execute()
 								.actionGet();
 

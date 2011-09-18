@@ -59,7 +59,7 @@ public class CollectionNonJtaTests extends TestCase {
 //                .configure("/org/compass/gps/device/hibernate/collection/compass-nonjta.cfg.xml");
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// cpConf.buildCompass();
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", theObjectContext);	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();

@@ -109,7 +109,7 @@ public abstract class HibernateHelper {
 */
     private static CompassEventListener findEventListener(SessionFactory sessionFactory) {
         if (sessionFactory instanceof SessionFactoryImpl) {
-	    EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+	    EventListenerRegistry	theRegistry = ((SessionFactoryImpl) sessionFactory).getServiceRegistry().getService( EventListenerRegistry.class );
             return findEventListener( theRegistry.getEventListenerGroup( EventType.POST_INSERT ) );
         } else {
             Session session = sessionFactory.openSession();
@@ -122,7 +122,7 @@ public abstract class HibernateHelper {
     }
 
     private static CompassEventListener findEventListener(Session session) {
-	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+	EventListenerRegistry	theRegistry = ((SessionFactoryImpl) session.getSessionFactory()).getServiceRegistry().getService( EventListenerRegistry.class );
         return findEventListener( theRegistry.getEventListenerGroup( EventType.POST_INSERT ) );
     }
 

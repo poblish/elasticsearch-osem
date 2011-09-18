@@ -67,7 +67,7 @@ public class Feed implements FeedIF, Serializable
 	private Locale					m_Locale;
 
 	@Column(name="isGroupFeed",columnDefinition="TINYINT(1) DEFAULT 0",nullable=false)
-	@Indexable
+	@Indexable(indexName="feedIsGroup")
 	private boolean					m_IsGroupFeed;
 
 	private final static Collection<String>		s_URLTermsWeDontWant = Collections.emptyList();

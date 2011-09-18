@@ -51,7 +51,7 @@ public class DefaultHibernateEntityCollectionLifecycleInjector extends DefaultHi
         SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
 	// (AGR_OSEM) Hib4 ... EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
 
-	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+	EventListenerRegistry	theRegistry = sessionFactoryImpl.getServiceRegistry().getService( EventListenerRegistry.class );
 
         if (registerPostCommitListeneres) {
             return;
@@ -116,7 +116,7 @@ public class DefaultHibernateEntityCollectionLifecycleInjector extends DefaultHi
         SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
 	// (AGR_OSEM) Hib4 ... EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
 
-	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+	EventListenerRegistry	theRegistry = sessionFactoryImpl.getServiceRegistry().getService( EventListenerRegistry.class );
 
 /* (AGR_OSEM) Hib4
 

@@ -60,7 +60,7 @@ public class DeleteIndirectSetOwnerWithCascadeTests extends TestCase {
 //	cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 //        compass = cpConf.buildCompass();
 
-	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();

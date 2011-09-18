@@ -56,7 +56,7 @@ public abstract class AbstractCascadeOneTests extends TestCase {
 //        CompassConfiguration cpConf = new CompassConfiguration()
 //                .configure(getCompassConfigLocation());
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
-        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// cpConf.buildCompass();
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", theObjectContext);	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();

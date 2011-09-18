@@ -97,7 +97,7 @@ public class DefaultHibernateEntityLifecycleInjector implements HibernateEntityL
         SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
 	// (AGR_OSEM) Hib4 ... EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
 
-	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+	EventListenerRegistry	theRegistry = sessionFactoryImpl.getServiceRegistry().getService( EventListenerRegistry.class );
 
         Object hibernateEventListener = doCreateListener(device);
 
@@ -108,14 +108,8 @@ public class DefaultHibernateEntityLifecycleInjector implements HibernateEntityL
             } else {
                 postInsertEventListeners = theRegistry.getEventListenerGroup( EventType.POST_INSERT );
             }
-            PostInsertEventListener[] tempPostInsertEventListeners = new PostInsertEventListener[postInsertEventListeners.count() + 1];
-            System.arraycopy(postInsertEventListeners, 0, tempPostInsertEventListeners, 0, postInsertEventListeners.count());
-            tempPostInsertEventListeners[postInsertEventListeners.count()] = (PostInsertEventListener) hibernateEventListener;
-            if (registerPostCommitListeneres) {
-                // (AGR_OSEM) Hib4 ... eventListeners.setPostCommitInsertEventListeners(tempPostInsertEventListeners);
-            } else {
-                // (AGR_OSEM) Hib4 ... eventListeners.setPostInsertEventListeners(tempPostInsertEventListeners);
-            }
+
+	    postInsertEventListeners.appendListener((PostInsertEventListener) hibernateEventListener);
         }
 
         if (hibernateEventListener instanceof PostUpdateEventListener) {
@@ -125,14 +119,8 @@ public class DefaultHibernateEntityLifecycleInjector implements HibernateEntityL
             } else {
                 postUpdateEventListeners = theRegistry.getEventListenerGroup( EventType.POST_UPDATE );
             }
-            PostUpdateEventListener[] tempPostUpdateEventListeners = new PostUpdateEventListener[postUpdateEventListeners.count() + 1];
-            System.arraycopy(postUpdateEventListeners, 0, tempPostUpdateEventListeners, 0, postUpdateEventListeners.count());
-            tempPostUpdateEventListeners[postUpdateEventListeners.count()] = (PostUpdateEventListener) hibernateEventListener;
-            if (registerPostCommitListeneres) {
-                // (AGR_OSEM) Hib4 ... eventListeners.setPostCommitUpdateEventListeners(tempPostUpdateEventListeners);
-            } else {
-                // (AGR_OSEM) Hib4 ... eventListeners.setPostUpdateEventListeners(tempPostUpdateEventListeners);
-            }
+
+	    postUpdateEventListeners.appendListener((PostUpdateEventListener) hibernateEventListener);
         }
 
         if (hibernateEventListener instanceof PostDeleteEventListener) {
@@ -142,23 +130,18 @@ public class DefaultHibernateEntityLifecycleInjector implements HibernateEntityL
             } else {
                 postDeleteEventListeners = theRegistry.getEventListenerGroup( EventType.POST_DELETE );
             }
-            PostDeleteEventListener[] tempPostDeleteEventListeners = new PostDeleteEventListener[postDeleteEventListeners.count() + 1];
-            System.arraycopy(postDeleteEventListeners, 0, tempPostDeleteEventListeners, 0, postDeleteEventListeners.count());
-            tempPostDeleteEventListeners[postDeleteEventListeners.count()] = (PostDeleteEventListener) hibernateEventListener;
-            if (registerPostCommitListeneres) {
-                // (AGR_OSEM) Hib4 ... eventListeners.setPostCommitDeleteEventListeners(tempPostDeleteEventListeners);
-            } else {
-                // (AGR_OSEM) Hib4 ... eventListeners.setPostDeleteEventListeners(tempPostDeleteEventListeners);
-            }
+
+	    postDeleteEventListeners.appendListener((PostDeleteEventListener) hibernateEventListener);
         }
     }
 
     public void removeLifecycle(SessionFactory sessionFactory, HibernateGpsDevice device) throws HibernateGpsDeviceException {
 
-        // (AGR_OSEM) Hib4 ... SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
+        SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
+
         // (AGR_OSEM) Hib4 ... EventListeners eventListeners = sessionFactoryImpl.getEventListeners();
 
-	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+	EventListenerRegistry	theRegistry = sessionFactoryImpl.getServiceRegistry().getService( EventListenerRegistry.class );
 
         EventListenerGroup<PostInsertEventListener> postInsertEventListeners;
 

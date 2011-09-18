@@ -5,15 +5,12 @@
 package org.compass.integration;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.osem.annotations.Searchable;
 import org.elasticsearch.osem.core.ObjectContext;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import org.elasticsearch.common.base.Objects;
@@ -27,24 +24,22 @@ public class InternalResource implements Resource
 {
 	private String			m_Id;
 	private String			m_Index;
-	private List<Property>		m_Properties = new ArrayList<Property>();
+//	private List<Property>		m_Properties = new ArrayList<Property>();
+	private Map<String,Object>	m_Properties = new HashMap<String,Object>();
 
 	private final static String[]	EMPTY_VALS = {};
 
 	/****************************************************************************
 	****************************************************************************/
+	@SuppressWarnings("unchecked")
 	public InternalResource( final ObjectContext inCtxt, final Map<String,Object> inMap)
 	{
-	//	System.out.println(" = " + inMap);
-	//	System.out.println(" => " + inMap.get("properties"));
-	//	System.out.println(" => " + inMap.get("properties").getClass());
-	//	System.out.println("k = " + inMap.keySet());
-
 		m_Id = (String) inMap.get("id");
 		m_Index = (String) inMap.get("index");
-	//	m_Properties = (List<Property>) inMap.get("properties");
 
-		setSourceProperties(inMap);
+		// m_Properties.put( "_class", inMap.get("_class"));
+
+		setSourceProperties((Map<String,Object>) inMap.get("properties"));
 	}
 
 	/****************************************************************************
@@ -66,14 +61,24 @@ public class InternalResource implements Resource
 	****************************************************************************/
 	public final InternalResource setSourceProperties( final Map<String,Object> inMap)
 	{
-		@SuppressWarnings("unchecked")
+		for ( Entry<String,Object> eachEntry : inMap.entrySet())
+		{
+			if (eachEntry.getKey().equals("_class"))
+			{
+				continue;
+			}
+
+			m_Properties.put( eachEntry.getKey(), eachEntry.getValue());
+		}
+
+	/*	@SuppressWarnings("unchecked")
 		final List<HashMap<String,String>>	theOsemProps = ((List<HashMap<String,String>>) inMap.get("properties"));
 
 		if ( theOsemProps != null)
 		{
 			for ( final HashMap<String,String> eachMap : theOsemProps)
 			{
-				m_Properties.add( new InternalProperty( eachMap.get("key"), eachMap.get("value")) );
+				// m_Properties.add( new InternalProperty( eachMap.get("key"), eachMap.get("value")) );
 			}
 		}
 
@@ -81,14 +86,14 @@ public class InternalResource implements Resource
 		{
 			if (eachEntry.getKey().equals("properties"))	continue;
 
-			m_Properties.add( new InternalProperty( eachEntry.getKey(), String.valueOf( eachEntry.getValue() )) );
+			// m_Properties.add( new InternalProperty( eachEntry.getKey(), String.valueOf( eachEntry.getValue() )) );
 		}
-
+*/
 		return this;
 	}
 
 	/****************************************************************************
-	****************************************************************************/
+	***************************************************************************
 	private Collection<Property> _getMatches( final String inName)
 	{
 		return Collections2.filter( m_Properties, new Predicate<Property>() {
@@ -99,14 +104,14 @@ public class InternalResource implements Resource
 				return inProp.getName().equals(inName);
 			}
 		});
-	}
+	}*/
 
 	/****************************************************************************
 	****************************************************************************/
 	@Override
 	public void removeProperties( final String inName)
 	{
-		m_Properties.removeAll( _getMatches(inName) );
+		m_Properties.remove(inName);	// m_Properties.removeAll( _getMatches(inName) );
 	}
 
 	/****************************************************************************
@@ -114,7 +119,7 @@ public class InternalResource implements Resource
 	@Override
 	public void removeProperty( final String inName)
 	{
-		m_Properties.removeAll( _getMatches(inName) );	// FIXME. Check only 1 match
+		m_Properties.remove(inName);	// m_Properties.removeAll( _getMatches(inName) );	// FIXME. Check only 1 match
 	}
 
 	/****************************************************************************
@@ -122,7 +127,7 @@ public class InternalResource implements Resource
 	@Override
 	public boolean hasProperty( final String inName)
 	{
-		return !_getMatches(inName).isEmpty();
+		return m_Properties.containsKey(inName);	// !_getMatches(inName).isEmpty();
 	}
 
 	/****************************************************************************
@@ -176,7 +181,7 @@ public class InternalResource implements Resource
 	/****************************************************************************
 	 * For elasticsearch-OSEM
 	****************************************************************************/
-	public List<Property> getProperties()
+	public Map<String,Object> getProperties()
 	{
 		return m_Properties;
 	}
@@ -184,7 +189,7 @@ public class InternalResource implements Resource
 	/****************************************************************************
 	 * For elasticsearch-OSEM
 	****************************************************************************/
-	public void setProperties( final List<Property> inProps)
+	public void setProperties( final Map<String,Object> inProps)
 	{
 		m_Properties = inProps;
 	}
@@ -192,11 +197,18 @@ public class InternalResource implements Resource
 	@Override
 	public String getValue( final String inName)
 	{
-		for ( Property each : m_Properties)
+		final Object	theVal = m_Properties.get(inName);
+
+		if ( theVal != null)
 		{
-			if (each.getName().equals(inName))
+			if ( theVal instanceof String)
 			{
-				return each.getValue();
+				return (String) theVal;
+			}
+
+			if ( theVal instanceof List)
+			{
+				return (String) ((List) theVal).iterator().next();
 			}
 		}
 
@@ -251,28 +263,53 @@ public class InternalResource implements Resource
 	@Override
 	public String[] getValues( final String inName)
 	{
-		Collection<String>	theVals = null;
+		final Object	theVal = m_Properties.get(inName);
 
-		for ( Property each : m_Properties)
+		if ( theVal != null)
 		{
-			if (each.getName().equals(inName))
+			if ( theVal instanceof String)
 			{
-				if ( theVals == null)
-				{
-					theVals = new ArrayList<String>();
-				}
+				return new String[]{ (String) theVal};
+			}
+			else if ( theVal instanceof List)
+			{
+				@SuppressWarnings("unchecked")
+				final List<String>	theList = (List<String>) theVal;
 
-				theVals.add( each.getValue() );
+				return theList.toArray( new String[ theList.size() ] );
 			}
 		}
 
-		return ( theVals != null) ? theVals.toArray( new String[ theVals.size() ]) : EMPTY_VALS;
+		return EMPTY_VALS;
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Resource addProperty( final String inName, Object inValue)
 	{
-		m_Properties.add( new InternalProperty( inName, String.valueOf(inValue) ) );
+		if (m_Properties.containsKey(inName))
+		{
+			final Object	theVal = m_Properties.get(inName);
+
+			if ( theVal instanceof String)
+			{
+				final List<String>	theList = new ArrayList<String>();
+
+				theList.add((String) theVal);
+				theList.add((String) inValue);
+
+				m_Properties.put( inName, theList);
+			}
+			else if ( theVal instanceof List)
+			{
+				((List<String>) theVal).add((String) inValue);
+			}
+		}
+		else
+		{
+			m_Properties.put( inName, inValue);
+		}
+
 		return this;
 	}
 

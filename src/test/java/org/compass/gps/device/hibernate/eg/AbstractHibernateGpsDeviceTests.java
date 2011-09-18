@@ -59,7 +59,7 @@ public abstract class AbstractHibernateGpsDeviceTests extends TestCase {
 //                .configure("/org/compass/gps/device/hibernate/eg/compass-mirror.cfg.xml");
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-	mirrorCompass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());
+	mirrorCompass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());
 
 	fileHandlerMonitorMirror = FileHandlerMonitor.getFileHandlerMonitor(mirrorCompass);
         fileHandlerMonitorMirror.verifyNoHandlers();

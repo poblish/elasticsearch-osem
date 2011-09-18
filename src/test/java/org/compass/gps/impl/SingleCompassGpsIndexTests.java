@@ -56,7 +56,7 @@ public class SingleCompassGpsIndexTests {
 //        conf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 //        compass = conf.buildCompass();
 
-	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", theObjectContext);
 
         ElasticSearchTests.deleteAllIndexes(compass);
         ElasticSearchTests.verifyAllIndexes(compass);
@@ -91,7 +91,7 @@ public class SingleCompassGpsIndexTests {
 //        // (AGR_OSEM) ... conf.addClass(MockIndexGpsDeviceObject.class);
 //        conf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());
 
         ElasticSearchTests.deleteAllIndexes(compass);
         ElasticSearchTests.verifyAllIndexes(compass);

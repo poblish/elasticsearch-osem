@@ -102,7 +102,7 @@ public abstract class AbstractHibernateGpsDeviceTests extends TestCase {
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 //        compass = cpConf.buildCompass();
 
-	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());
 
         ElasticSearchTests.deleteAllIndexes(compass);
         ElasticSearchTests.verifyAllIndexes(compass);

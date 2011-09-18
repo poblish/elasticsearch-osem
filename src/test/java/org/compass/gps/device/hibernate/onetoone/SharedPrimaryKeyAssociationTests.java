@@ -58,7 +58,7 @@ public class SharedPrimaryKeyAssociationTests extends TestCase {
 //                .configure("/org/compass/gps/device/hibernate/onetoone/compass-nonjta.cfg.xml");
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 //        compass = cpConf.buildCompass();
-        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", theObjectContext);	// cpConf.buildCompass();
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", theObjectContext);	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();

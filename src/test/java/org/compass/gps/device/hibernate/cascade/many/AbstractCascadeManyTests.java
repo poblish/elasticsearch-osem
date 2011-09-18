@@ -45,7 +45,7 @@ public abstract class AbstractCascadeManyTests extends TestCase {
 //                .configure(getCompassConfigLocation());
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.107", ObjectContextFactory.create());	// cpConf.buildCompass();
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
@@ -70,7 +70,7 @@ public abstract class AbstractCascadeManyTests extends TestCase {
 
         SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
 
-	EventListenerRegistry	theRegistry = null;	// (AGR_OSEM) Hib4
+	EventListenerRegistry	theRegistry = sessionFactoryImpl.getServiceRegistry().getService( EventListenerRegistry.class );
 
 	EventListenerGroup<PostInsertEventListener>	theGroup = theRegistry.getEventListenerGroup( EventType.POST_INSERT );
 

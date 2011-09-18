@@ -71,6 +71,7 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
         throw new ObjectContextSerializationException(object.getClass(), exception);
     }
 
+	@SuppressWarnings("unchecked")
     private void write(XContentBuilder builder, Object object) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException,
             IOException {
         for (Map.Entry<PropertyDescriptor, SerializableAttribute> entry : attributes.getSerializableProperties(object.getClass()).entrySet()) {
@@ -79,7 +80,48 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
             SerializableAttribute serializable = entry.getValue();
             IndexableAttribute indexable = attributes.getIndexableProperties(object.getClass()).get(property);
             String name = indexable != null && indexable.getIndexName() != null ? indexable.getIndexName() : property.getName();
-            write(builder, name, signatures.get(property), property.getReadMethod().invoke(object));
+
+	    // (AGR) starts
+
+	    final Object			theMethodResult = property.getReadMethod().invoke(object);
+	    final PropertySignature	theSig = signatures.get(property);
+
+	    if (theSig.getTypeClass().isPrimitive())
+	    {
+		   if ( theMethodResult instanceof Long)
+		   {
+			  builder.field( name, ((Long) theMethodResult).longValue());
+		   }
+		   else if ( theMethodResult instanceof Integer)
+		   {
+			  builder.field( name, ((Integer) theMethodResult).intValue());
+		   }
+		   else if ( theMethodResult instanceof Boolean)
+		   {
+			  builder.field( name, ((Boolean) theMethodResult).booleanValue());
+		   }
+		   else if ( theMethodResult instanceof Double)
+		   {
+			  builder.field( name, ((Double) theMethodResult).doubleValue());
+		   }
+		   else if ( theMethodResult instanceof Float)
+		   {
+			  builder.field( name, ((Float) theMethodResult).floatValue());
+		   }
+		   else	// Well, what?
+		   {
+			  builder.field( name, String.valueOf(theMethodResult));
+		   }
+
+		   continue;
+	    }
+	    else if ( theSig.getTypeClass().isAssignableFrom( Map.class ))
+	    {
+		    builder.field( name, (Map) theMethodResult);
+		    continue;
+	    }
+
+            write(builder, name, theSig, theMethodResult);
         }
         // Add _class field
         builder.field(ObjectContextImpl.CLASS_FIELD_NAME, object.getClass().getCanonicalName());
@@ -89,11 +131,6 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
     private void write(XContentBuilder builder, String name, PropertySignature signature, Object value) throws IllegalArgumentException, IOException,
             IllegalAccessException, InvocationTargetException {
 
-/*	if ( signature == null) {	// (AGR)
-		System.out.println("**** SKIP **** " + name + " / " + signature);
-		return;
-	}
-*/
 	if (name != null) {
             if (name.equals("_id") && value == null) {
                 // Filtering "_id" field with null value, for automatic id generation

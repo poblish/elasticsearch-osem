@@ -44,7 +44,7 @@ public class ArticleTest
 	@Test
 	public void testArticle() throws IOException
 	{
-		Client client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.107", 9300));
+		Client client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.103", 9300));
 
 		//////////////////////////////////////////////////////////////////////////////////////
 

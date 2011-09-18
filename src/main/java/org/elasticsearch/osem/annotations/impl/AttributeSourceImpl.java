@@ -124,14 +124,23 @@ public class AttributeSourceImpl implements AttributeSource {
     @Override
     public Map<PropertyDescriptor, IndexableAttribute> getIndexableProperties(Class<?> clazz) {
         Map<PropertyDescriptor, IndexableAttribute> indexableProperties = indexables.get(clazz);
-        if (indexableProperties == null) {
+
+	// System.out.println( "@@ " + indexableProperties);
+
+	if (indexableProperties == null) {
             indexableProperties = new HashMap<PropertyDescriptor, IndexableAttribute>();
             boolean searchable = isSearchable(clazz);
+
+	    // System.out.println( "@@ " + clazz + " is searchable? " + searchable);
+
             for (PropertyDescriptor property : getProperties(clazz)) {
                 // Filtering excluded properties
                 if (!isExcluded(property)) {
                     IndexableAttribute indexable = getIndexableAttribute(property);
-                    if (indexable == null) {
+
+			 // System.out.println( "@@ " + property.getReadMethod() + " == " + indexable);
+
+		    if (indexable == null) {
                         if (searchable) {
                             // Searchable class properties are implicitly Indexable
                             indexable = new IndexableAttributeImpl();
@@ -151,6 +160,10 @@ public class AttributeSourceImpl implements AttributeSource {
                         indexableProperties.put(property, indexable);
                     }
                 }
+		else
+		{
+			// System.out.println( "@@ EXCLUDED " + property.getReadMethod());
+		}
             }
             // Caching
             Map<PropertyDescriptor, IndexableAttribute> i = indexables.putIfAbsent(clazz, indexableProperties);
@@ -233,7 +246,7 @@ public class AttributeSourceImpl implements AttributeSource {
 			continue;
 		}
 
-		logger.trace( ":: FOR " + clazz + ", ADD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
+		// logger.trace( ":: FOR " + clazz + ", ADD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
 
 		properties.put(name, property);
             }
@@ -242,13 +255,17 @@ public class AttributeSourceImpl implements AttributeSource {
         }
         return properties;
     }
-
+ 
     private IndexableAttribute getIndexableAttribute(PropertyDescriptor property) {
         IndexableAttribute indexableAttr = indexableAttributes.get(property);
+        // System.out.println( "--> " + _propertyDescriptorString(property) + " => " + indexableAttr);
         if (indexableAttr == null) {
             Indexable indexable = getAnnotation(property, Indexable.class);
+	    // System.out.println( "----> " + propertyDescriptorString(property) + " => " + indexable);
             if (indexable != null) {
+		// System.out.println( "=== " + indexable);
                 indexableAttr = AttributeBuilder.build(indexable);
+		// System.out.println( "===> " + indexableAttr);
                 IndexableAttribute i = indexableAttributes.putIfAbsent(property, AttributeBuilder.build(indexable));
                 indexableAttr = i != null ? i : indexableAttr;
             }
@@ -301,5 +318,10 @@ public class AttributeSourceImpl implements AttributeSource {
 
     private boolean isSearchable(Class<?> clazz) {
         return getSearchableAttribute(clazz) != null;
+    }
+
+    private String propertyDescriptorString( final PropertyDescriptor inPD)
+    {
+	    return "[R: " + inPD.getReadMethod() + ", W: " + inPD.getWriteMethod() + "]";
     }
 }

@@ -16,14 +16,21 @@
 
 package org.compass.core;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import org.compass.integration.InternalResource;
 import org.compass.integration.Resource;
 import org.compass.integration.Resources;
 import org.compass.integration.SearchHelperIF;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.base.Preconditions;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.osem.core.ObjectContext;
@@ -33,7 +40,7 @@ import org.elasticsearch.search.sort.SortOrder;
 /**
  * A specialized interface that provides only search and read capabilities.
  *
- * <p>Using the session depends on how transaction managemnet should be done (also see
+ * <p>Using the session depends on how transaction management should be done (also see
  * {@link Compass#openSearchSession()}. The simplest form looks like this:
  *
  * <pre>
@@ -54,6 +61,10 @@ public interface CompassSearchSession {
 		private final Client		m_Client;
 		private final ObjectContext	m_Ctxt;
 
+		private final static String	DEFAULT_TYPE = "???";
+
+		private final static ESLogger	logger = Loggers.getLogger( InternalSearchHelper.class );
+
 		public InternalSearchHelper( final CompassSession inSsn)
 		{
 			m_Client = inSsn.getClient();
@@ -61,51 +72,59 @@ public interface CompassSearchSession {
 		}
 
 		@Override
-		public SearchHits getHits( final QueryBuilder inQuery)
-		{
-			final SearchResponse	theResp = m_Client.prepareSearch( /* No extra indices */).setQuery(inQuery).execute().actionGet();
-			return theResp.getHits();
-		}
-
-		@Override
 		public SearchHits getHits( final QueryBuilder inQuery, final String... inIndices)
 		{
+			Preconditions.checkArgument( inIndices.length >= 1);
+
+			logger.info( "getHits( final QueryBuilder inQuery, final String... inIndices)", (Object) inIndices);
+			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
+
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).execute().actionGet();
-			return theResp.getHits();
+			return _getHits(theResp);
 		}
 
 		@Override
 		public SearchHits getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final String... inIndices)
 		{
-			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).execute().actionGet();
-			return theResp.getHits();
-		}
+			Preconditions.checkArgument( inIndices.length >= 1);
 
-		@Override
-		public SearchHits getHits( final QueryBuilder inQuery, final int inMaxNum)
-		{
-			final SearchResponse	theResp = m_Client.prepareSearch( /* No extra indices */).setQuery(inQuery).setSize(inMaxNum).execute().actionGet();
-			return theResp.getHits();
+			logger.info( "getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final String... inIndices)");
+			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices) + ", applying " + inFilter);
+
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).execute().actionGet();
+			return _getHits(theResp);
 		}
 
 		@Override
 		public SearchHits getHits( final QueryBuilder inQuery, final int inMaxNum, final String... inIndices)
 		{
+			Preconditions.checkArgument( inIndices.length >= 1);
+
+			logger.info( "getHits( final QueryBuilder inQuery, final int inMaxNum, final String... inIndices)", (Object) inIndices);
+			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
+
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).execute().actionGet();
-			return theResp.getHits();
+			return _getHits(theResp);
 		}
 
 		@Override
 		public SearchHits getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String... inIndices)
 		{
+			Preconditions.checkArgument( inIndices.length >= 1);
+
+			logger.info( "getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String... inIndices)", (Object) inIndices);
+			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices) + ", applying " + inFilter);
+
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(inMaxNum).execute().actionGet();
-			return theResp.getHits();
+			return _getHits(theResp);
 		}
 
 		// @Override
 		public GetResponse getResource( final String inIdx, final String inId)
 		{
-			return m_Client.prepareGet( inIdx, null, inId).execute().actionGet();
+			logger.info( "getResource('" + inIdx + "'," + inId + ")");
+
+			return m_Client.prepareGet( inIdx, DEFAULT_TYPE, inId).execute().actionGet();
 		}
 
 		@Override
@@ -132,20 +151,7 @@ public interface CompassSearchSession {
 
 			return theResp.exists() ? Resources.fromMap( m_Ctxt, theResp.getSource() ) : null;
 		}
-/*
-		@Override
-		public Resource getResourceOrNull( final Class inClass, final Serializable inId)
-		{
-			if ( inId == null)
-			{
-				return null;
-			}
 
-			final GetResponse	theResp = getResource( inIdx, inId);
-
-			return theResp.exists() ? Resources.fromMap( theResp.getSource() ) : null;
-		}
-*/
 		@Override
 		public Resource createResource( final String inIdx)
 		{
@@ -153,31 +159,60 @@ public interface CompassSearchSession {
 		}
 
 		@Override
+		public void saveResource( final Resource inResource)
+		{
+			final XContentBuilder	theResBuilder = m_Ctxt.write(inResource);
+
+			try {
+				System.out.println("Saving '" + inResource.getAlias() + "' Resource: " + theResBuilder.string());
+			}
+			catch (IOException ex) {
+				// NOOP
+			}
+
+			m_Client.prepareIndex( inResource.getAlias(), DEFAULT_TYPE, inResource.getId())
+				.setSource(theResBuilder)
+				.execute().actionGet();
+		}
+
+		@Override
 		public SearchHits sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)
 		{
+			logger.info( "sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)", (Object) inIndices);
+			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
+
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).addSort( inSortField, SortOrder.ASC).execute().actionGet();
-			return theResp.getHits();
+			return _getHits(theResp);
 		}
 
 		@Override
 		public SearchHits sortedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
+			logger.info( "sortedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
+			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
+
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).addSort( inSortField, SortOrder.ASC).execute().actionGet();
-			return theResp.getHits();
+			return _getHits(theResp);
 		}
 
 		@Override
 		public SearchHits reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)
 		{
+			logger.info( "reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)", (Object) inIndices);
+			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
+
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).addSort( inSortField, SortOrder.DESC).execute().actionGet();
-			return theResp.getHits();
+			return _getHits(theResp);
 		}
 
 		@Override
 		public SearchHits reversedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
+			logger.info( "reversedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
+			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
+
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).addSort( inSortField, SortOrder.DESC).execute().actionGet();
-			return theResp.getHits();
+			return _getHits(theResp);
 		}
 
 		@Override
@@ -190,6 +225,49 @@ public interface CompassSearchSession {
 		public Resource getResourceOrNull( final Class<?> inIdx, final long inId)
 		{
 			throw new UnsupportedOperationException("Not supported yet.");
+		}
+
+		@Override
+		public void index( final String inIndex, final String inId, final Object inInitialObject)
+		{
+			index( inIndex, DEFAULT_TYPE, inId, inInitialObject);
+		}
+
+		@Override
+		public void index( final String inIndex, final String inType, final String inId, final Object inInitialObject)
+		{
+			final IndexResponse	theResponse = m_Client.prepareIndex( inIndex, inType, inId)
+									.setSource( m_Ctxt.write(inInitialObject) )
+									.execute()
+									.actionGet();
+		}
+
+		@Override
+		public void index( final String inIndex, final String inId, final XContentBuilder inInitialBuilder)
+		{
+			index( inIndex, /* FIXME */ "xxx", inId, inInitialBuilder);
+		}
+
+		@Override
+		public void index( final String inIndex, final String inType, final String inId, final XContentBuilder inInitialBuilder)
+		{
+			final IndexResponse	theResponse = m_Client.prepareIndex( inIndex, inType, inId)
+									.setSource(inInitialBuilder)
+									.execute()
+									.actionGet();
+		}
+
+		private SearchHits _getHits( final SearchResponse inResponse)
+		{
+			logger.info( "@ Response = " + inResponse);
+
+			return inResponse.getHits();
+		}
+
+		@Override
+		public void refreshIndices( final String... inIndices)
+		{
+			m_Client.admin().indices().prepareRefresh(inIndices).execute().actionGet();
 		}
 	}
 

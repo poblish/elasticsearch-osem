@@ -4,22 +4,18 @@
  */
 package org.elasticsearch.test;
 
+import org.elasticsearch.osem.test.DefaultCompassSettings;
+import org.elasticsearch.osem.test.DefaultESCompass;
 import org.elasticsearch.gps.device.hibernate.embedded.CompassEventListener;
-import org.compass.core.events.RebuildEventListener;
 import org.compass.core.spi.InternalCompass;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.osem.core.ElasticSearchSession;
-import org.compass.core.CompassSession;
-import org.easymock.IAnswer;
 import org.compass.core.Compass;
-import org.compass.core.config.CompassEnvironment;
 import org.compass.core.config.CompassSettings;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.osem.core.ObjectContext;
-import static org.easymock.EasyMock.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
@@ -53,22 +49,22 @@ public class ElasticSearchTests
 	****************************************************************************/
 	public static Compass mockCompass( final Client inClient, final ObjectContext inCtxt)
 	{
-	    final CompassSettings theCompassSettings = createMock( CompassSettings.class );
+//	    final CompassSettings theCompassSettings = createMock( CompassSettings.class );
+//
+//	    expect( theCompassSettings.getClassLoader() ).andReturn( inCtxt.getClass().getClassLoader() ).anyTimes();
+//	    expect( theCompassSettings.getSetting( CompassEnvironment.CONNECTION ) ).andReturn("/tmp").anyTimes();
+//
+//	    replay(theCompassSettings);
 
-	    expect( theCompassSettings.getClassLoader() ).andReturn( inCtxt.getClass().getClassLoader() ).anyTimes();
-	    expect( theCompassSettings.getSetting( CompassEnvironment.CONNECTION ) ).andReturn("/tmp").anyTimes();
-
-	    replay(theCompassSettings);
-
-	    return mockCompass( inClient, inCtxt, theCompassSettings);
+		return mockCompass( inClient, inCtxt, new DefaultCompassSettings());
 	}
 
 	/****************************************************************************
 	****************************************************************************/
 	public static Compass mockCompass( final Client inClient, final ObjectContext inCtxt, final CompassSettings inSettings)
 	{
-		final InternalCompass theCompass = createMock( InternalCompass.class );
-
+		final InternalCompass theCompass = new DefaultESCompass( inClient, inCtxt, inSettings);	// createMock( InternalCompass.class );
+/*
 		expect( theCompass.getSettings() ).andReturn(inSettings).anyTimes();
 		expect( theCompass.getObjectContext() ).andReturn(inCtxt).anyTimes();
 		expect( theCompass.getClient() ).andReturn(inClient).anyTimes();
@@ -89,7 +85,7 @@ public class ElasticSearchTests
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 
 		replay(theCompass);
-
+*/
 		CompassEventListener.sharedElasticSearchTestCompass = theCompass;	// (AGR) FIXME, pretty hideous
 
 		return theCompass;
