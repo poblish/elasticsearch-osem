@@ -194,6 +194,8 @@ public class InternalResource implements Resource
 		m_Properties = inProps;
 	}
 	
+	/****************************************************************************
+	****************************************************************************/
 	@Override
 	public String getValue( final String inName)
 	{
@@ -201,14 +203,13 @@ public class InternalResource implements Resource
 
 		if ( theVal != null)
 		{
-			if ( theVal instanceof String)
-			{
-				return (String) theVal;
-			}
-
 			if ( theVal instanceof List)
 			{
 				return (String) ((List) theVal).iterator().next();
+			}
+			else
+			{
+				return String.valueOf(theVal);
 			}
 		}
 
