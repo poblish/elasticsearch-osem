@@ -30,6 +30,8 @@ public class ElasticSearchSession implements CompassSession
 	private final ObjectContext	m_Ctxt;
 	private final Client		m_Client;
 
+	private final static String	DEFAULT_TYPE = "???";
+
 	private static final ESLogger	logger = Loggers.getLogger( ElasticSearchSession.class );
 
 	/****************************************************************************
@@ -96,7 +98,7 @@ public class ElasticSearchSession implements CompassSession
 			ex.printStackTrace();
 		}
 
-		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx.toLowerCase(), "xxx", theId)
+		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx.toLowerCase(), DEFAULT_TYPE, theId)
 								.setSource(theBuilder)
 								.execute()
 								.actionGet();
@@ -136,7 +138,7 @@ public class ElasticSearchSession implements CompassSession
 			ex.printStackTrace();
 		}
 
-		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx, "xxx", theId)
+		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx, DEFAULT_TYPE, theId)
 								.setSource(theBuilder)
 								.execute()
 								.actionGet();
@@ -166,7 +168,7 @@ public class ElasticSearchSession implements CompassSession
 
 		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
 
-		final DeleteResponse	theResponse = m_Client.prepareDelete( theIdx.toLowerCase(), "xxx", theId).execute().actionGet();
+		final DeleteResponse	theResponse = m_Client.prepareDelete( theIdx.toLowerCase(), DEFAULT_TYPE, theId).execute().actionGet();
 
 		if (theResponse.notFound())
 		{
@@ -188,7 +190,7 @@ public class ElasticSearchSession implements CompassSession
 
 		logger.debug("load(): WANT " + theIdx + " #" + inId);
 
-		final SearchResponse	theSearchResponse = m_Client.prepareSearch(theIdx).setQuery( idsQuery("xxx").addIds( String.valueOf(inId) ) ).execute().actionGet();
+		final SearchResponse	theSearchResponse = m_Client.prepareSearch(theIdx).setQuery( idsQuery(DEFAULT_TYPE).addIds( String.valueOf(inId) ) ).execute().actionGet();
 		final SearchHits		theHits = theSearchResponse.getHits();
 
 		logger.debug("load(): got " + theSearchResponse);

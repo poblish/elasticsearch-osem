@@ -107,6 +107,20 @@ public class ElasticSearchTests
 
 	/****************************************************************************
 	****************************************************************************/
+	public static void optimizeAllIndexes( final Client inClient)
+	{
+		inClient.admin().indices().prepareOptimize("_all").execute().actionGet();
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	public static void optimizeIndexes( final Client inClient, final String... inIndices)
+	{
+		inClient.admin().indices().prepareOptimize(inIndices).execute().actionGet();
+	}
+
+	/****************************************************************************
+	****************************************************************************/
 	public static void verifyAllIndexes( final Compass inCompass)
 	{
 		// NOOP

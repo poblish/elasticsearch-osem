@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
-			<version>0.17.6</version>
+			<version>0.17.7</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -217,30 +217,30 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Mark Lucene 3.3 as 'provided' -->
+		<!-- Mark Lucene 3.4 as 'provided' -->
 
 		<dependency>
 			<artifactId>lucene-analyzers</artifactId>
 			<groupId>org.apache.lucene</groupId>
-			<version>3.3.0</version>
+			<version>3.4.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<artifactId>lucene-core</artifactId>
 			<groupId>org.apache.lucene</groupId>
-			<version>3.3.0</version>
+			<version>3.4.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<artifactId>lucene-highlighter</artifactId>
 			<groupId>org.apache.lucene</groupId>
-			<version>3.3.0</version>
+			<version>3.4.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<artifactId>lucene-memory</artifactId>
 			<groupId>org.apache.lucene</groupId>
-			<version>3.3.0</version>
+			<version>3.4.0</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

@@ -57,7 +57,7 @@ public class BasicHibTest
 	@BeforeMethod
 	public void setUp()
 	{
-		s_Client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.107", 9300));
+		s_Client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.103", 9300));
 
 		// s_Client.prepareDeleteByQuery( IDX_ACTOR, IDX_ARTICLE, IDX_BLOG, IDX_FEED).setQuery( matchAllQuery() ).execute().actionGet();
 
