@@ -195,7 +195,7 @@ public class InternalResource implements Resource
 	@Override
 	public String getValue( final String inName)
 	{
-		return _getStringForObject( m_Properties.get(inName) );
+		return _getStringForObject( _getMatchFromMap( m_Properties, inName) );
 	}
 
 	/****************************************************************************
@@ -204,14 +204,7 @@ public class InternalResource implements Resource
 	@Override
 	public int getIntValue( final String inName)
 	{
-		final String	theStr = getValue(inName);
-
-		if ( theStr != null)
-		{
-			return Integer.parseInt(theStr);
-		}
-
-		return Integer.parseInt( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
+		return Integer.parseInt( getValue(inName) );
 	}
 
 	/****************************************************************************
@@ -220,14 +213,7 @@ public class InternalResource implements Resource
 	@Override
 	public long getLongValue( final String inName)
 	{
-		final String	theStr = getValue(inName);
-
-		if ( theStr != null)
-		{
-			return Long.parseLong(theStr);
-		}
-
-		return Long.parseLong( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
+		return Long.parseLong( getValue(inName) );
 	}
 
 	/****************************************************************************
@@ -236,14 +222,7 @@ public class InternalResource implements Resource
 	@Override
 	public float getFloatValue( final String inName)
 	{
-		final String	theStr = getValue(inName);
-
-		if ( theStr != null)
-		{
-			return Float.parseFloat(theStr);
-		}
-
-		return Float.parseFloat( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
+		return Float.parseFloat( getValue(inName) );
 	}
 
 	/****************************************************************************
@@ -252,14 +231,7 @@ public class InternalResource implements Resource
 	@Override
 	public double getDoubleValue( final String inName)
 	{
-		final String	theStr = getValue(inName);
-
-		if ( theStr != null)
-		{
-			return Double.parseDouble(theStr);
-		}
-
-		return Double.parseDouble( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
+		return Double.parseDouble( getValue(inName) );
 	}
 
 	/****************************************************************************
@@ -268,14 +240,7 @@ public class InternalResource implements Resource
 	@Override
 	public boolean getBooleanValue( final String inName)
 	{
-		final String	theStr = getValue(inName);
-
-		if ( theStr != null)
-		{
-			return Boolean.parseBoolean(theStr);
-		}
-
-		return Boolean.parseBoolean( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
+		return Boolean.parseBoolean( getValue(inName) );
 	}
 
 	/****************************************************************************
@@ -311,7 +276,12 @@ public class InternalResource implements Resource
 		{
 			if ( eachEntry.getValue() instanceof Map)
 			{
-				return _getMatchFromMap((Map<String,Object>) eachEntry.getValue(), inName);
+				final Object	theResult = _getMatchFromMap((Map<String,Object>) eachEntry.getValue(), inName);
+
+				if ( theResult != null)
+				{
+					return theResult;
+				}
 			}
 		}
 
