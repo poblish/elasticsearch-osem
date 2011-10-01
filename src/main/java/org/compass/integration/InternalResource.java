@@ -5,17 +5,14 @@
 package org.compass.integration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.elasticsearch.common.base.Objects;
 import org.elasticsearch.osem.annotations.Searchable;
 import org.elasticsearch.osem.core.ObjectContext;
-
-import java.util.HashMap;
-import java.util.Map.Entry;
-import org.elasticsearch.common.base.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -26,12 +23,9 @@ public class InternalResource implements Resource
 {
 	private String			m_Id;
 	private String			m_Index;
-//	private List<Property>		m_Properties = new ArrayList<Property>();
 	private Map<String,Object>	m_Properties = new HashMap<String,Object>();
 
 	private final static String[]	EMPTY_VALS = {};
-
-	private final static Logger	s_Logger = LoggerFactory.getLogger( InternalResource.class );
 
 	/****************************************************************************
 	****************************************************************************/
@@ -40,8 +34,6 @@ public class InternalResource implements Resource
 	{
 		m_Id = (String) inMap.get("id");
 		m_Index = (String) inMap.get("index");
-
-		// m_Properties.put( "_class", inMap.get("_class"));
 
 		setSourceProperties((Map<String,Object>) inMap.get("properties"));
 	}
@@ -317,8 +309,6 @@ public class InternalResource implements Resource
 
 		for ( Entry<String,Object> eachEntry : inMap.entrySet())
 		{
-			s_Logger.info("> Trying " + eachEntry.getValue() + " for '" + inName + "' / " + eachEntry.getValue().getClass());
-
 			if ( eachEntry.getValue() instanceof Map)
 			{
 				return _getMatchFromMap((Map<String,Object>) eachEntry.getValue(), inName);
