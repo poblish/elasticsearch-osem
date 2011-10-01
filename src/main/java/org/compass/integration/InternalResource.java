@@ -14,6 +14,8 @@ import org.elasticsearch.osem.core.ObjectContext;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import org.elasticsearch.common.base.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -28,6 +30,8 @@ public class InternalResource implements Resource
 	private Map<String,Object>	m_Properties = new HashMap<String,Object>();
 
 	private final static String[]	EMPTY_VALS = {};
+
+	private final static Logger	s_Logger = LoggerFactory.getLogger( InternalResource.class );
 
 	/****************************************************************************
 	****************************************************************************/
@@ -199,21 +203,7 @@ public class InternalResource implements Resource
 	@Override
 	public String getValue( final String inName)
 	{
-		final Object	theVal = m_Properties.get(inName);
-
-		if ( theVal != null)
-		{
-			if ( theVal instanceof List)
-			{
-				return (String) ((List) theVal).iterator().next();
-			}
-			else
-			{
-				return String.valueOf(theVal);
-			}
-		}
-
-		return null;
+		return _getStringForObject( m_Properties.get(inName) );
 	}
 
 	/****************************************************************************
@@ -222,7 +212,14 @@ public class InternalResource implements Resource
 	@Override
 	public int getIntValue( final String inName)
 	{
-		return Integer.parseInt( getValue(inName) );
+		final String	theStr = getValue(inName);
+
+		if ( theStr != null)
+		{
+			return Integer.parseInt(theStr);
+		}
+
+		return Integer.parseInt( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
 	}
 
 	/****************************************************************************
@@ -231,7 +228,14 @@ public class InternalResource implements Resource
 	@Override
 	public long getLongValue( final String inName)
 	{
-		return Long.parseLong( getValue(inName) );
+		final String	theStr = getValue(inName);
+
+		if ( theStr != null)
+		{
+			return Long.parseLong(theStr);
+		}
+
+		return Long.parseLong( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
 	}
 
 	/****************************************************************************
@@ -240,7 +244,14 @@ public class InternalResource implements Resource
 	@Override
 	public float getFloatValue( final String inName)
 	{
-		return Float.parseFloat( getValue(inName) );
+		final String	theStr = getValue(inName);
+
+		if ( theStr != null)
+		{
+			return Float.parseFloat(theStr);
+		}
+
+		return Float.parseFloat( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
 	}
 
 	/****************************************************************************
@@ -249,7 +260,14 @@ public class InternalResource implements Resource
 	@Override
 	public double getDoubleValue( final String inName)
 	{
-		return Double.parseDouble( getValue(inName) );
+		final String	theStr = getValue(inName);
+
+		if ( theStr != null)
+		{
+			return Double.parseDouble(theStr);
+		}
+
+		return Double.parseDouble( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
 	}
 
 	/****************************************************************************
@@ -258,9 +276,60 @@ public class InternalResource implements Resource
 	@Override
 	public boolean getBooleanValue( final String inName)
 	{
-		return Boolean.parseBoolean( getValue(inName) );
+		final String	theStr = getValue(inName);
+
+		if ( theStr != null)
+		{
+			return Boolean.parseBoolean(theStr);
+		}
+
+		return Boolean.parseBoolean( _getStringForObject( _getMatchFromMap( m_Properties, inName) ) );
 	}
 
+	/****************************************************************************
+	****************************************************************************/
+	private static String _getStringForObject( final Object inObj)
+	{
+		if ( inObj != null)
+		{
+			if ( inObj instanceof List)
+			{
+				return (String) ((List) inObj).iterator().next();
+			}
+			else
+			{
+				return String.valueOf(inObj);
+			}
+		}
+
+		return null;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@SuppressWarnings("unchecked")
+	private static Object _getMatchFromMap( final Map<String,Object> inMap, final String inName)
+	{
+		if (inMap.containsKey(inName))
+		{
+			return inMap.get(inName);
+		}
+
+		for ( Entry<String,Object> eachEntry : inMap.entrySet())
+		{
+			s_Logger.info("> Trying " + eachEntry.getValue() + " for '" + inName + "' / " + eachEntry.getValue().getClass());
+
+			if ( eachEntry.getValue() instanceof Map)
+			{
+				return _getMatchFromMap((Map<String,Object>) eachEntry.getValue(), inName);
+			}
+		}
+
+		return null;
+	}
+
+	/****************************************************************************
+	****************************************************************************/
 	@Override
 	public String[] getValues( final String inName)
 	{
