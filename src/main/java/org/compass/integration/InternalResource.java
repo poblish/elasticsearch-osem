@@ -5,6 +5,7 @@
 package org.compass.integration;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -251,7 +252,10 @@ public class InternalResource implements Resource
 		{
 			if ( inObj instanceof List)
 			{
-				return (String) ((List) inObj).iterator().next();
+				@SuppressWarnings("unchecked")
+				final List<String>	theList = (List) inObj;
+
+				return theList.isEmpty() ? null : theList.iterator().next();
 			}
 			else
 			{
@@ -281,6 +285,25 @@ public class InternalResource implements Resource
 				if ( theResult != null)
 				{
 					return theResult;
+				}
+			}
+			else if ( eachEntry.getValue() instanceof Collection)
+			{
+				final Collection		theColl = (Collection) eachEntry.getValue();
+
+				if (!theColl.isEmpty())
+				{
+					final Object	theFirstItem = theColl.iterator().next();    // Assume that each item in collection has the *same* property keys set!
+
+					if ( theFirstItem instanceof Map)
+					{
+						final Object	theResult = _getMatchFromMap((Map<String,Object>) theFirstItem, inName);
+
+						if ( theResult != null)
+						{
+							return theResult;
+						}
+					}
 				}
 			}
 		}
