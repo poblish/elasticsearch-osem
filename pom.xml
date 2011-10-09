@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
-			<version>0.17.7</version>
+			<version>0.17.8</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -136,12 +136,6 @@
 			<version>4.0.0.Beta5</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-api</artifactId>
-			<version>6.0</version>
-			<scope>provided</scope>
-		</dependency>
 
 		<!-- Compass 2.3.0 beta integration -->
 
@@ -209,11 +203,13 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- For old Compass Hib integration tests. For javax.resource.spi.XATerminator -->
+		<!-- For tests -->
+
 		<dependency>
-			<groupId>javaee</groupId>
-			<artifactId>javaee-api</artifactId>
-			<version>5</version>
+			<groupId>org.jboss.spec</groupId>
+			<artifactId>jboss-javaee-6.0</artifactId>
+			<version>1.0.0.Final</version>
+			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
 
