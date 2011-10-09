@@ -4,6 +4,9 @@
  */
 package org.compass.integration;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.natpryce.maybe.Maybe;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -124,7 +127,7 @@ public class InternalResource implements Resource
 	@Override
 	public boolean hasProperty( final String inName)
 	{
-		return m_Properties.containsKey(inName);	// !_getMatches(inName).isEmpty();
+		return _getMatchFromMap( m_Properties, inName, false).isKnown();
 	}
 
 	/****************************************************************************
@@ -196,7 +199,7 @@ public class InternalResource implements Resource
 	@Override
 	public String getValue( final String inName)
 	{
-		return _getStringForObject( _getMatchFromMap( m_Properties, inName) );
+		return _getStringForObject( _getMatchFromMap( m_Properties, inName, false) ).otherwise((String) null);
 	}
 
 	/****************************************************************************
@@ -246,43 +249,50 @@ public class InternalResource implements Resource
 
 	/****************************************************************************
 	****************************************************************************/
-	private static String _getStringForObject( final Object inObj)
+	private static Maybe<String> _getStringForObject( final Maybe<Object> inObj)
 	{
-		if ( inObj != null)
+		if (!inObj.isKnown())
 		{
-			if ( inObj instanceof List)
+			return Maybe.unknown();
+		}
+
+		final Object	theActualObj = inObj.iterator().next();
+
+		if ( theActualObj != null)
+		{
+			if ( theActualObj instanceof List)
 			{
 				@SuppressWarnings("unchecked")
-				final List<String>	theList = (List) inObj;
+				final List<String>	theList = (List) theActualObj;
 
-				return theList.isEmpty() ? null : theList.iterator().next();
+				return Maybe.definitely( theList.isEmpty() ? null : theList.iterator().next());
 			}
 			else
 			{
-				return String.valueOf(inObj);
+				return Maybe.definitely( String.valueOf(theActualObj) );
 			}
 		}
 
-		return null;
+		return Maybe.definitely(null);
 	}
 
 	/****************************************************************************
 	****************************************************************************/
 	@SuppressWarnings("unchecked")
-	private static Object _getMatchFromMap( final Map<String,Object> inMap, final String inName)
+	private static Maybe<Object> _getMatchFromMap( final Map<String,Object> inMap, final String inName, final boolean inWantMultipleValues)
 	{
 		if (inMap.containsKey(inName))
 		{
-			return inMap.get(inName);
+			return Maybe.definitely( inMap.get(inName) );
 		}
 
 		for ( Entry<String,Object> eachEntry : inMap.entrySet())
 		{
 			if ( eachEntry.getValue() instanceof Map)
 			{
-				final Object	theResult = _getMatchFromMap((Map<String,Object>) eachEntry.getValue(), inName);
+				final Maybe<Object>	theResult = _getMatchFromMap((Map<String,Object>) eachEntry.getValue(), inName, inWantMultipleValues);
 
-				if ( theResult != null)
+				if (theResult.isKnown())
 				{
 					return theResult;
 				}
@@ -293,22 +303,55 @@ public class InternalResource implements Resource
 
 				if (!theColl.isEmpty())
 				{
-					final Object	theFirstItem = theColl.iterator().next();    // Assume that each item in collection has the *same* property keys set!
-
-					if ( theFirstItem instanceof Map)
+					if (inWantMultipleValues)
 					{
-						final Object	theResult = _getMatchFromMap((Map<String,Object>) theFirstItem, inName);
+						final Collection<Object>	theMultipleMatches = new ArrayList<Object>();
 
-						if ( theResult != null)
+						for ( Object eachItem : theColl)
 						{
-							return theResult;
+							if ( eachItem instanceof Map)
+							{
+								final Maybe<Object>	theResult = _getMatchFromMap((Map<String,Object>) eachItem, inName, inWantMultipleValues);
+
+								if (theResult.isKnown())
+								{
+									final Object	theResultObj = theResult.iterator().next();
+
+									if ( theResultObj instanceof Collection)
+									{
+										return Maybe.definitely(theResultObj);
+									}
+
+									theMultipleMatches.add(theResultObj);
+								}
+							}
+						}
+
+						if (!theMultipleMatches.isEmpty())
+						{
+							return Maybe.definitely((Object) theMultipleMatches);
 						}
 					}
+					else
+					{
+						final Object	theFirstItem = theColl.iterator().next();    // Assume that each item in collection has the *same* property keys set!
+
+						if ( theFirstItem instanceof Map)
+						{
+							final Maybe<Object>	theResult = _getMatchFromMap((Map<String,Object>) theFirstItem, inName, inWantMultipleValues);
+
+							if (theResult.isKnown())
+							{
+								return theResult;
+							}
+						}
+					}
+
 				}
 			}
 		}
 
-		return null;
+		return Maybe.unknown();
 	}
 
 	/****************************************************************************
@@ -316,21 +359,34 @@ public class InternalResource implements Resource
 	@Override
 	public String[] getValues( final String inName)
 	{
-		final Object	theVal = m_Properties.get(inName);
+		final Maybe<Object>	theResult = _getMatchFromMap( m_Properties, inName, true);
 
-		if ( theVal != null)
+		if (!theResult.isKnown())
 		{
-			if ( theVal instanceof String)
-			{
-				return new String[]{ (String) theVal};
-			}
-			else if ( theVal instanceof List)
-			{
-				@SuppressWarnings("unchecked")
-				final List<String>	theList = (List<String>) theVal;
+			return EMPTY_VALS;
+		}
 
-				return theList.toArray( new String[ theList.size() ] );
-			}
+		///////////////////////////////////////////////////////////////////////////
+
+		final Object	theVal = theResult.iterator().next();
+
+		if ( theVal instanceof String)
+		{
+			return new String[]{ (String) theVal};
+		}
+		else if ( theVal instanceof List)
+		{
+			@SuppressWarnings("unchecked")
+			final List<String>	theList = (List<String>) theVal;
+
+			return Lists.transform( theList, new Function<Object,String>() {
+
+				@Override
+				public String apply( final Object inObj)
+				{
+					return String.valueOf(inObj);
+				}
+			}).toArray( new String[ theList.size() ] );
 		}
 
 		return EMPTY_VALS;
