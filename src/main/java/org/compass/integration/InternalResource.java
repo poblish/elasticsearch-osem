@@ -127,7 +127,7 @@ public class InternalResource implements Resource
 	@Override
 	public boolean hasProperty( final String inName)
 	{
-		return _getMatchFromMap( m_Properties, inName, false).isKnown();
+		return _getMatchFromMap( m_Properties, inName, false).isKnown() || ( inName.equals("id") && m_Id != null);
 	}
 
 	/****************************************************************************
@@ -279,7 +279,7 @@ public class InternalResource implements Resource
 	/****************************************************************************
 	****************************************************************************/
 	@SuppressWarnings("unchecked")
-	private static Maybe<Object> _getMatchFromMap( final Map<String,Object> inMap, final String inName, final boolean inWantMultipleValues)
+	private Maybe<Object> _getMatchFromMap( final Map<String,Object> inMap, final String inName, final boolean inWantMultipleValues)
 	{
 		if (inMap.containsKey(inName))
 		{
@@ -349,6 +349,11 @@ public class InternalResource implements Resource
 
 				}
 			}
+		}
+
+		if ( inName.equals("id") && m_Id != null)
+		{
+			return Maybe.definitely((Object) m_Id);
 		}
 
 		return Maybe.unknown();
