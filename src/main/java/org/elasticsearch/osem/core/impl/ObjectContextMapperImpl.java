@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -79,10 +78,8 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
     }
 
     private ObjectContextMapper _add(Class<?> clazz, final String inPrefix) {
-//	System.out.println( inPrefix + "** Hit class: " + clazz);
         if (!types.contains(clazz)) {
             for (PropertyDescriptor property : attributes.getSerializableProperties(clazz).keySet()) {
-//	System.out.println( inPrefix + "---- Trying: " + propertyDescriptorString(property) + " // " + signatures.get(property));
                 PropertySignature composite = signatures.get(property).getComposite();
                 if (composite != null) {
                     while (composite.getTypeClass() == null) {
@@ -92,18 +89,10 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
                         composite = composite.getComposite();
                     }
 
-		    // System.out.println( inPrefix + "---- Composite = " + composite);
-
                     if (composite.getTypeClass() != null && !composite.getType().isPrimitive()) {
-			 // System.out.println( inPrefix + "**** Adding sub: " + composite.getTypeClass());
                         _add(composite.getTypeClass(), inPrefix + "  ");
                     }
                 }
-/*		else
-		{
-			System.out.println( inPrefix + "---- NO Composite");
-			int x = 1;
-		} */
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("Added type [{}]", clazz);
@@ -216,11 +205,6 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
         RootObjectMapper.Builder objectBuilder = new RootObjectMapper.Builder(name);
         Collection<Mapper.Builder<?, ?>> builders = buildersCache.get(clazz);
         if (builders == null) {
-//		System.out.println("====== " + clazz + " / " + name);
-//		if ( clazz.getSimpleName().equals("ActorResourceIF"))
-//		{
-//			int x = 1;
-//		}
             // FIXME [alois.cochard] if clazz is an interface generate from merging registered clazz impl + interfaces
             builders = new ArrayList<Mapper.Builder<?, ?>>();
             Map<PropertyDescriptor, SerializableAttribute> serializables = attributes.getSerializableProperties(clazz);
