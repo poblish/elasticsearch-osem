@@ -43,5 +43,4 @@ public class ObjectContextImpl extends AbstractObjectContext implements ObjectCo
         writer = new ObjectContextWriterImpl(attributes, signatures);
         reader = new ObjectContextReaderImpl(attributes, signatures);
     }
-
 }

@@ -18,12 +18,15 @@
  */
 package org.elasticsearch.osem.core.impl;
 
+import com.google.common.collect.Lists;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 
+import java.util.Map.Entry;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.osem.annotations.AttributeSource;
@@ -33,6 +36,8 @@ import org.elasticsearch.osem.core.ObjectContextSerializationException;
 import org.elasticsearch.osem.core.ObjectContextWriter;
 import org.elasticsearch.osem.property.PropertySignature;
 import org.elasticsearch.osem.property.PropertySignatureSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -40,6 +45,8 @@ import org.elasticsearch.osem.property.PropertySignatureSource;
  *
  */
 public class ObjectContextWriterImpl implements ObjectContextWriter {
+
+    private final static Logger	s_Logger = LoggerFactory.getLogger( ObjectContextWriterImpl.class );
 
     private AttributeSource attributes;
 
@@ -56,7 +63,10 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
         try {
             XContentBuilder builder = JsonXContent.contentBuilder();
             builder.startObject();
-            write(builder, object);
+
+	    System.out.println("********* " + object);
+
+            writeObject( builder, object, Lists.newArrayList(object));
             builder.endObject();
             return builder;
         } catch (IllegalArgumentException e) {
@@ -71,20 +81,43 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
         throw new ObjectContextSerializationException(object.getClass(), exception);
     }
 
+    @SuppressWarnings("unchecked")
+    private void writeObject( XContentBuilder builder, Object object, final Collection<Object> ioChain)
+				throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, IOException
+    {
+        for ( Entry<PropertyDescriptor,SerializableAttribute> entry : attributes.getSerializableProperties( object.getClass() ).entrySet())
+	{
+		// TODO [alois.cochard] Handle serialization attribute
+		// TODO [alois.cochard] SerializableAttribute serializable = entry.getValue();
+
+		writeProperty( entry.getKey(), builder, object, ioChain);
+        }
+
+        // Add _class field
+        builder.field(ObjectContextImpl.CLASS_FIELD_NAME, object.getClass().getCanonicalName());
+    }
+
 	@SuppressWarnings("unchecked")
-    private void write(XContentBuilder builder, Object object) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException,
-            IOException {
-        for (Map.Entry<PropertyDescriptor, SerializableAttribute> entry : attributes.getSerializableProperties(object.getClass()).entrySet()) {
-            PropertyDescriptor property = entry.getKey();
-            // TODO [alois.cochard] Handle serialization attribute
-            SerializableAttribute serializable = entry.getValue();
-            IndexableAttribute indexable = attributes.getIndexableProperties(object.getClass()).get(property);
-            String name = indexable != null && indexable.getIndexName() != null ? indexable.getIndexName() : property.getName();
+	private void writeProperty( final PropertyDescriptor inProperty, XContentBuilder builder, Object object, final Collection<Object> ioChain)
+					throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, IOException
+	{
+	    IndexableAttribute indexable = attributes.getIndexableProperties(object.getClass()).get(inProperty);
+	    String name = indexable != null && indexable.getIndexName() != null ? indexable.getIndexName() : inProperty.getName();
 
 	    // (AGR) starts
 
-	    final Object			theMethodResult = property.getReadMethod().invoke(object);
-	    final PropertySignature	theSig = signatures.get(property);
+	    Object	theMethodResult;
+
+	    try
+	    {
+		  theMethodResult = inProperty.getReadMethod().invoke(object);
+	    }
+	    catch (RuntimeException e)
+	    {
+		    return;
+	    }
+
+	    final PropertySignature	theSig = signatures.get(inProperty);
 
 	    if (theSig.getTypeClass().isPrimitive())
 	    {
@@ -108,82 +141,144 @@ public class ObjectContextWriterImpl implements ObjectContextWriter {
 		   {
 			  builder.field( name, ((Float) theMethodResult).floatValue());
 		   }
+		   else if ( theMethodResult instanceof Byte)
+		   {
+			  builder.field( name, ((Byte) theMethodResult).byteValue());
+		   }
+		   else if ( theMethodResult instanceof Short)
+		   {
+			  builder.field( name, ((Short) theMethodResult).shortValue());
+		   }
 		   else	// Well, what?
 		   {
 			  builder.field( name, String.valueOf(theMethodResult));
 		   }
-
-		   continue;
 	    }
 	    else if ( theSig.getTypeClass().isAssignableFrom( Map.class ))
 	    {
 		    builder.field( name, (Map) theMethodResult);
-		    continue;
 	    }
-
-            write(builder, name, theSig, theMethodResult);
-        }
-        // Add _class field
-        builder.field(ObjectContextImpl.CLASS_FIELD_NAME, object.getClass().getCanonicalName());
-    }
-
-    @SuppressWarnings("unchecked")
-    private void write(XContentBuilder builder, String name, PropertySignature signature, Object value) throws IllegalArgumentException, IOException,
-            IllegalAccessException, InvocationTargetException {
-
-	if (name != null) {
-            if (name.equals("_id") && value == null) {
-                // Filtering "_id" field with null value, for automatic id generation
-                return;
-            }
-            builder.field(name);
-        }
-        if (value == null) {
-            builder.nullValue();
-        } else {
-	    if ( signature.getType() == null)	// (AGR)
+	    else if ( theSig.getTypeClass().isAssignableFrom( Locale.class ))
 	    {
-                   if ( value instanceof org.hibernate.collection.internal.PersistentSet)
-		    {
-			   //  org.hibernate.collection.PersistentSet	x = (org.hibernate.collection.PersistentSet) value;
+		    final Locale	theLocale = (Locale) theMethodResult;
 
-			    Object[] a = value.getClass().isArray() ? (Object[]) value : ((Collection) value).toArray();
-			    builder.startArray();
-			    for (Object o : a) {
-				// write(builder, o);	// write(builder, null, signature.getComposite(), o);
-				    builder.startObject();
-				    write(builder, o);
-				    builder.endObject();
-			    }
-			    builder.endArray();
-		    }
-		    else
-		    {
-			    builder.value(value);
+		    builder.field(name);
+		    builder.startObject();
+
+		    builder.field( "lang", theLocale.getLanguage());
+
+		    if ( theLocale.getCountry().length() > 0) {
+			builder.field( "country", theLocale.getCountry());
 		    }
 
-		    return;
+		    if ( theLocale.getVariant().length() > 0) {
+			    builder.field( "variant", theLocale.getVariant());
+		    }
+
+		    builder.endObject();
 	    }
-            switch (signature.getType()) {
-                case Array:
-                case Collection:
-                    Object[] a = value.getClass().isArray() ? (Object[]) value : ((Collection) value).toArray();
-                    builder.startArray();
-                    for (Object o : a) {
-                        write(builder, null, signature.getComposite(), o);
-                    }
-                    builder.endArray();
-                    break;
-                case Object:
-                    builder.startObject();
-                    write(builder, value);
-                    builder.endObject();
-                    break;
-                default:
-                    // TODO [alois.cochard] add access to serializable attribute
-                    value = value != null ? signature.getType().getAdapter().write(null, value) : value;
-                    builder.value(value);
-            }
-        }
+	    else
+	    {
+		    if (name.equals("_id") && theMethodResult == null) {
+			// Filtering "_id" field with null value, for automatic id generation
+		        return;
+		    }
+
+		    writePropertyValue( builder, theSig, name, theMethodResult, ioChain);
+	    }
     }
+
+	private void writePropertyValue( final XContentBuilder ioBuilder, final PropertySignature signature,
+					final String inName, final Object value, final Collection<Object> ioChain)
+						throws IllegalArgumentException, IOException, IllegalAccessException, InvocationTargetException
+	{
+		if ( value == null) {
+			if ( inName != null) {
+				ioBuilder.field(inName);
+			}
+
+			ioBuilder.nullValue();
+			return;
+		}
+
+	if ( signature.getType() == null)	// (AGR)
+	{
+		if ( inName != null) {
+			ioBuilder.field(inName);
+		}
+
+	/*	if ( value instanceof Locale)
+		{
+			ioBuilder.startObject();
+			writeObject( ioBuilder, "hello:", ioChain);
+			ioBuilder.endObject();
+		}
+		else */ if ( value instanceof org.hibernate.collection.internal.PersistentSet)
+		{
+			Object[] a = value.getClass().isArray() ? (Object[]) value : ((Collection) value).toArray();
+			ioBuilder.startArray();
+			for (Object o : a)
+			{
+				handleNestedObject( ioBuilder, inName, o, ioChain);
+			}
+			ioBuilder.endArray();
+		}
+		else
+		{
+			ioBuilder.value(value);
+		}
+
+		return;
+	}
+
+	switch (signature.getType())
+	{
+		case Array:
+		case Collection:
+			if ( inName != null) {
+				ioBuilder.field(inName);
+			}
+
+			Object[] a = value.getClass().isArray() ? (Object[]) value : ((Collection) value).toArray();
+			ioBuilder.startArray();
+			for (Object o : a) {
+				writePropertyValue( ioBuilder, signature.getComposite(), null, o, ioChain);
+			}
+			ioBuilder.endArray();
+			break;
+		case Object:
+			handleNestedObject( ioBuilder, inName, value, ioChain);
+			break;
+		default:
+			// TODO [alois.cochard] add access to serializable attribute
+
+			if ( inName != null) {
+				ioBuilder.field(inName);
+			}
+
+			ioBuilder.value(( value != null) ? signature.getType().getAdapter().write( null, value) : value);
+	}
+    }
+
+	private void handleNestedObject( final XContentBuilder ioBuilder, final String inName, final Object inValue,
+					final Collection<Object> ioChain) throws IllegalArgumentException, IOException, IllegalAccessException, InvocationTargetException
+	{
+		if (ioChain.contains(inValue))
+		{
+//			System.out.println("**** CACHE HIT FOR " + inValue);
+			return;
+		}
+
+		ioChain.add(inValue);
+
+//		System.out.println("---- Chain now [" + ioChain.size() + "]: " + ioChain);
+
+		if ( inName != null) {
+			ioBuilder.field(inName);
+		}
+
+		ioBuilder.startObject();
+		writeObject( ioBuilder, inValue, ioChain);
+		ioBuilder.endObject();
+	}
 }

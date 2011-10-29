@@ -113,65 +113,71 @@ public class ObjectContextReaderImpl implements ObjectContextReader {
             if (name.equals(ObjectContextImpl.CLASS_FIELD_NAME)) {
                 continue;
             }
-            PropertyDescriptor property = attributes.getProperty(clazz, name);
-            // TODO [alois.cochard] Handling of serialization attribute, perhaps better to rewrite reader/writer in a more OOP way.
-            SerializableAttribute serializable = attributes.getSerializableProperties(clazz).get(property);
-            if (property != null) {
-                PropertySignature signature = signatures.get(property);
-                if (value != null) {
-                    if (signature.getComposite() == null) {
 
-			if ( signature.getType() == null)
-			{
-				System.out.println("### IGNORE: " + signature);
-				continue;
+            for ( PropertyDescriptor property : attributes.getProperty(clazz, name))
+	    {
+		    // TODO [alois.cochard] Handling of serialization attribute, perhaps better to rewrite reader/writer in a more OOP way.
+		    SerializableAttribute serializable = attributes.getSerializableProperties(clazz).get(property);
+		    if (property != null) {
+			PropertySignature signature = signatures.get(property);
+			if (value != null) {
+			    if (signature.getComposite() == null) {
+
+				if ( signature.getType() == null)
+				{
+					System.out.println("### IGNORE: " + signature);
+					continue;
+				}
+
+				if ( value instanceof String)
+				{
+					value = signature.getType().getAdapter().read(serializable, (String) value);
+
+					// System.out.println("### " + property.getWriteMethod().getParameterTypes()[0]);
+					if ( value instanceof String && property.getWriteMethod().getParameterTypes()[0].equals( Integer.class ))    // (AGR) FIXME BODGE!
+					{
+						value = Integer.valueOf((String) value);
+					}
+					else if ( value instanceof String && property.getWriteMethod().getParameterTypes()[0].equals( Long.class ))    // (AGR) FIXME BODGE!
+					{
+						value = Long.valueOf((String) value);
+					}
+				}
+
+			    } else {
+				switch (signature.getType()) {
+				    case Array:
+				    case Collection:
+					Collection<Object> input = (Collection<Object>) value;
+					Collection<Object> output = (Collection<Object>) signature.getTypeClass().newInstance();
+					for (Object o : input) {
+					    if (signature.getComposite().getType().getAdapter() != null) {
+						output.add(signature.getComposite().getType().getAdapter().read(serializable, (String) o));
+					    } else {
+						output.add(parseObject((Map<String, Object>) o, signature.getComposite().getTypeClass()));
+					    }
+					}
+					value = output;
+					if (signature.getType().equals(PropertyType.Array)) {
+					    value = output.toArray((Object[]) Array.newInstance(signature.getComposite().getTypeClass(), output.size()));
+					}
+					break;
+				    case Object:
+					value = parseObject((Map<String, Object>) value, signature.getComposite().getTypeClass());
+					break;
+				}
+			    }
 			}
 
-                        value = signature.getType().getAdapter().read(serializable, (String) value);
-
-			// System.out.println("### " + property.getWriteMethod().getParameterTypes()[0]);
-			if ( value instanceof String && property.getWriteMethod().getParameterTypes()[0].equals( Integer.class ))    // (AGR) FIXME BODGE!
-			{
-				value = Integer.valueOf((String) value);
+			try {
+				property.getWriteMethod().invoke(object, value);
+			} catch (IllegalArgumentException e) {
+				System.out.println("### Can't pass argument: " + value + " (of type '" + value.getClass() + "') to Method: " + property.getWriteMethod() + " where 'this' is " + object);
+				throw e;
 			}
-			else if ( value instanceof String && property.getWriteMethod().getParameterTypes()[0].equals( Long.class ))    // (AGR) FIXME BODGE!
-			{
-				value = Long.valueOf((String) value);
-			}
-
-                    } else {
-                        switch (signature.getType()) {
-                            case Array:
-                            case Collection:
-                                Collection<Object> input = (Collection<Object>) value;
-                                Collection<Object> output = (Collection<Object>) signature.getTypeClass().newInstance();
-                                for (Object o : input) {
-                                    if (signature.getComposite().getType().getAdapter() != null) {
-                                        output.add(signature.getComposite().getType().getAdapter().read(serializable, (String) o));
-                                    } else {
-                                        output.add(parseObject((Map<String, Object>) o, signature.getComposite().getTypeClass()));
-                                    }
-                                }
-                                value = output;
-                                if (signature.getType().equals(PropertyType.Array)) {
-                                    value = output.toArray((Object[]) Array.newInstance(signature.getComposite().getTypeClass(), output.size()));
-                                }
-                                break;
-                            case Object:
-                                value = parseObject((Map<String, Object>) value, signature.getComposite().getTypeClass());
-                                break;
-                        }
-                    }
-                }
-
-		try {
-			property.getWriteMethod().invoke(object, value);
-		} catch (IllegalArgumentException e) {
-			System.out.println("### Can't pass " + object + " & " + value + "/" + value.getClass() + " to " + property.getWriteMethod());
-			throw e;
+		    }
 		}
-            }
-        }
+	}
 
         return object;
     }

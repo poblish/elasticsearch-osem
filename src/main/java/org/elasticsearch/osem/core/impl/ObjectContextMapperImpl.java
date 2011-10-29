@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -47,6 +48,9 @@ import org.elasticsearch.osem.core.ObjectContextMapper;
 import org.elasticsearch.osem.core.ObjectContextMappingException;
 import org.elasticsearch.osem.property.PropertySignature;
 import org.elasticsearch.osem.property.PropertySignatureSource;
+import org.elasticsearch.osem.property.PropertyType;
+
+import com.google.common.primitives.Primitives;
 
 /**
  * 
@@ -58,7 +62,7 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
 
     private ConcurrentMap<Class<?>, Collection<Mapper.Builder<?, ?>>> buildersCache = new ConcurrentHashMap<Class<?>, Collection<Mapper.Builder<?, ?>>>();
 
-    private AttributeSource attributes;;
+    private AttributeSource attributes;
 
     private PropertySignatureSource signatures;
 
@@ -71,8 +75,14 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
 
     @Override
     public ObjectContextMapper add(Class<?> clazz) {
+	return _add( clazz, "");
+    }
+
+    private ObjectContextMapper _add(Class<?> clazz, final String inPrefix) {
+//	System.out.println( inPrefix + "** Hit class: " + clazz);
         if (!types.contains(clazz)) {
             for (PropertyDescriptor property : attributes.getSerializableProperties(clazz).keySet()) {
+//	System.out.println( inPrefix + "---- Trying: " + propertyDescriptorString(property) + " // " + signatures.get(property));
                 PropertySignature composite = signatures.get(property).getComposite();
                 if (composite != null) {
                     while (composite.getTypeClass() == null) {
@@ -81,10 +91,19 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
                         }
                         composite = composite.getComposite();
                     }
+
+		    // System.out.println( inPrefix + "---- Composite = " + composite);
+
                     if (composite.getTypeClass() != null && !composite.getType().isPrimitive()) {
-                        add(composite.getTypeClass());
+			 // System.out.println( inPrefix + "**** Adding sub: " + composite.getTypeClass());
+                        _add(composite.getTypeClass(), inPrefix + "  ");
                     }
                 }
+/*		else
+		{
+			System.out.println( inPrefix + "---- NO Composite");
+			int x = 1;
+		} */
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("Added type [{}]", clazz);
@@ -104,12 +123,20 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
        return getPropertyByName( object, "id");
     }
 
-    private String getPropertyByName(Object object, final String inName) {
-        PropertyDescriptor property = attributes.getProperty(object.getClass(), inName);
-        if (property != null) {
-            Exception exception = null;
+    private String getPropertyByName(Object object, final String inName)
+    {
+	final Collection<PropertyDescriptor>	thePDsColl = attributes.getProperty( object.getClass(), inName);
+
+	if ( thePDsColl == null) {
+		return null;
+	}
+
+        Exception exception = null;
+
+        for ( PropertyDescriptor eachPD : thePDsColl)
+        {
             try {
-                return String.valueOf( property.getReadMethod().invoke(object) );    // (AGR) String.valueOf(...) much better
+                return String.valueOf( eachPD.getReadMethod().invoke(object) );    // (AGR) String.valueOf(...) much better
             } catch (IllegalArgumentException e) {
                 exception = e;
             } catch (IllegalAccessException e) {
@@ -117,18 +144,23 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
             } catch (InvocationTargetException e) {
                 exception = e;
             }
-            throw new ObjectContextMappingException(object.getClass(), exception);
         }
+
+        if ( exception != null) {
+		throw new ObjectContextMappingException(object.getClass(), exception);
+	}
+
         return null;
     }
 
     @Override
     public void setId(Object object, String id) throws ObjectContextMappingException {
-        PropertyDescriptor property = attributes.getProperty(object.getClass(), "_id");
-        if (property != null) {
-            Exception exception = null;
+        Exception exception = null;
+
+        for ( PropertyDescriptor eachPD : attributes.getProperty(object.getClass(), "_id"))
+	{
             try {
-                property.getWriteMethod().invoke(object, id);
+                eachPD.getWriteMethod().invoke(object, id);
                 return;
             } catch (IllegalArgumentException e) {
                 exception = e;
@@ -137,8 +169,11 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
             } catch (InvocationTargetException e) {
                 exception = e;
             }
-            throw new ObjectContextMappingException(object.getClass(), exception);
         }
+
+        if ( exception != null) {
+		throw new ObjectContextMappingException(object.getClass(), exception);
+	}
     }
 
     @Override
@@ -181,6 +216,11 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
         RootObjectMapper.Builder objectBuilder = new RootObjectMapper.Builder(name);
         Collection<Mapper.Builder<?, ?>> builders = buildersCache.get(clazz);
         if (builders == null) {
+//		System.out.println("====== " + clazz + " / " + name);
+//		if ( clazz.getSimpleName().equals("ActorResourceIF"))
+//		{
+//			int x = 1;
+//		}
             // FIXME [alois.cochard] if clazz is an interface generate from merging registered clazz impl + interfaces
             builders = new ArrayList<Mapper.Builder<?, ?>>();
             Map<PropertyDescriptor, SerializableAttribute> serializables = attributes.getSerializableProperties(clazz);
@@ -211,7 +251,18 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
     private Mapper.Builder<?, ?> build(PropertyDescriptor property, SerializableAttribute serializable, IndexableAttribute indexable) {
         PropertySignature signature = signatures.get(property);
         String name = indexable.getIndexName() == null ? property.getName() : indexable.getIndexName();
-        switch (signature.getType()) {
+
+	if (signature.getTypeClass().isPrimitive())
+	{
+		final PropertyType	theNonPrimitivePT = PropertyType.get( Primitives.wrap( signature.getTypeClass() ) );
+
+		if ( theNonPrimitivePT != null)
+		{
+			return theNonPrimitivePT.getAdapter().build( serializable, indexable, name);
+		}
+	}
+
+	switch (signature.getType()) {
             case Array:
             case Collection:
                 // FIXME [alois.cochard] problem with array of array, or collection of collection... must disable this possibility ?
@@ -227,4 +278,8 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
         }
     }
 
+	private static String propertyDescriptorString( final PropertyDescriptor inPD)
+	{
+		return "[R: " + inPD.getReadMethod() + ", W: " + inPD.getWriteMethod() + "]";
+	}
 }
