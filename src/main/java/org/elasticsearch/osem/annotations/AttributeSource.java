@@ -21,6 +21,7 @@ package org.elasticsearch.osem.annotations;
 import java.beans.PropertyDescriptor;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * This interface provides operations to determine if classes have attribute information. 
@@ -32,7 +33,7 @@ public interface AttributeSource {
 
     Collection<PropertyDescriptor> getProperties(Class<?> clazz);
 
-    PropertyDescriptor getProperty(Class<?> clazz, String indexName);
+    Collection<PropertyDescriptor> getProperty(Class<?> clazz, String indexName);
 
     SearchableAttribute getSearchableAttribute(Class<?> clazz);
 
@@ -40,4 +41,5 @@ public interface AttributeSource {
 
     Map<PropertyDescriptor, IndexableAttribute> getIndexableProperties(Class<?> clazz);
 
+    Iterable<Entry<Class<?>,SearchableAttribute>> getSearchableAttributes();    // (AGR) 26 October 2011
 }

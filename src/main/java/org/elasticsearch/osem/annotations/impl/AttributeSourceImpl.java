@@ -18,6 +18,7 @@
  */
 package org.elasticsearch.osem.annotations.impl;
 
+import org.hamcrest.Matcher;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -48,6 +49,12 @@ import org.elasticsearch.osem.annotations.SerializableAttribute;
 import org.elasticsearch.osem.common.springframework.core.annotation.AnnotationUtils;
 import org.elasticsearch.osem.core.ObjectContextException;
 
+import com.google.common.collect.Sets;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.Map.Entry;
+import static org.hamcrest.Matchers.*;
+
 /**
  *
  * @author alois.cochard
@@ -59,7 +66,7 @@ public class AttributeSourceImpl implements AttributeSource {
 
     // FIXME [alois.cochard] set all inner map to unmodifiable, and all returned map/collection to unmodifiable in all projct !
 
-    private ConcurrentMap<Class<?>, Map<String, PropertyDescriptor>> classProperties = new ConcurrentHashMap<Class<?>, Map<String, PropertyDescriptor>>();
+    private ConcurrentMap<Class<?>, Map<String,Collection<PropertyDescriptor>>> classProperties = new ConcurrentHashMap<Class<?>, Map<String,Collection<PropertyDescriptor>>>();
 
     private ConcurrentMap<PropertyDescriptor, SerializableAttribute> serializableAttributes = new ConcurrentHashMap<PropertyDescriptor, SerializableAttribute>();
 
@@ -89,17 +96,28 @@ public class AttributeSourceImpl implements AttributeSource {
         if (clazz.getSuperclass() != null) {
             descriptors.addAll(getPropertyDescriptors(clazz.getSuperclass()));
         }
-        return descriptors;
+	return descriptors;
     }
 
     @Override
     public Collection<PropertyDescriptor> getProperties(Class<?> clazz) {
-        return getClassProperties(clazz).values();
+	final Collection<PropertyDescriptor>	theColl = new ArrayList<PropertyDescriptor>();
+
+	for ( Collection<PropertyDescriptor> eachColl : getClassProperties(clazz).values())
+	{
+		theColl.addAll(eachColl);
+	}
+
+        return theColl;
     }
 
     @Override
-    public PropertyDescriptor getProperty(Class<?> clazz, String indexName) {
-        return getClassProperties(clazz).get(indexName);
+    public Collection<PropertyDescriptor> getProperty(Class<?> clazz, String indexName) {
+	final Collection<PropertyDescriptor> theColl = getClassProperties(clazz).get(indexName);
+	if ( theColl != null) {
+		return theColl;
+	}
+	return Collections.emptyList();
     }
 
     @Override
@@ -125,20 +143,14 @@ public class AttributeSourceImpl implements AttributeSource {
     public Map<PropertyDescriptor, IndexableAttribute> getIndexableProperties(Class<?> clazz) {
         Map<PropertyDescriptor, IndexableAttribute> indexableProperties = indexables.get(clazz);
 
-	// System.out.println( "@@ " + indexableProperties);
-
 	if (indexableProperties == null) {
             indexableProperties = new HashMap<PropertyDescriptor, IndexableAttribute>();
             boolean searchable = isSearchable(clazz);
 
-	    // System.out.println( "@@ " + clazz + " is searchable? " + searchable);
-
             for (PropertyDescriptor property : getProperties(clazz)) {
                 // Filtering excluded properties
                 if (!isExcluded(property)) {
-                    IndexableAttribute indexable = getIndexableAttribute(property);
-
-			 // System.out.println( "@@ " + property.getReadMethod() + " == " + indexable);
+                    IndexableAttribute indexable = getIndexableAttribute( clazz, property);
 
 		    if (indexable == null) {
                         if (searchable) {
@@ -169,7 +181,7 @@ public class AttributeSourceImpl implements AttributeSource {
             Map<PropertyDescriptor, IndexableAttribute> i = indexables.putIfAbsent(clazz, indexableProperties);
             indexableProperties = i != null ? i : indexableProperties;
         }
-        return indexableProperties;
+	return indexableProperties;
     }
 
     @Override
@@ -187,7 +199,7 @@ public class AttributeSourceImpl implements AttributeSource {
                             // Searchable class properties are implicitly Serializable
                             serializable = new SerializableAttributeImpl();
                         } else {
-                            if (getIndexableAttribute(property) != null) {
+                            if (getIndexableAttribute( clazz, property) != null) {
                                 // Indexable properties are implicitly Serializable
                                 serializable = new SerializableAttributeImpl();
                             }
@@ -213,25 +225,49 @@ public class AttributeSourceImpl implements AttributeSource {
         return serializableProperties;
     }
 
-    private <A extends Annotation> A getAnnotation(PropertyDescriptor property, Class<A> annotationType) {
+    private <A extends Annotation> A getAnnotation( final Class<?> inClass, PropertyDescriptor property, Class<A> annotationType) {
         // Look for annotation on setter only
         Method setter = property.getWriteMethod();
         if (setter != null) {
-            return AnnotationUtils.findAnnotation(setter, annotationType);
+            final A	theAnnotation = AnnotationUtils.findAnnotation( setter, annotationType);
+	    if ( theAnnotation != null) {
+		    return theAnnotation;
+	    }
         }
-        return null;
+
+	if ( inClass != null) {
+		Matcher<String>	theMatcher = isIn( getPossibleFieldNamesForProperty( property.getName() ) );
+
+		for ( Field eachField : inClass.getDeclaredFields()) {
+			if ( theMatcher.matches( eachField.getName() )) {
+				final A	theAnnotation = eachField.getAnnotation(annotationType);
+				if ( theAnnotation != null) {
+					return theAnnotation;
+				}
+			}
+		}
+	}
+
+	return null;
     }
 
-    private Map<String, PropertyDescriptor> getClassProperties(Class<?> clazz) {
-        Map<String, PropertyDescriptor> properties = classProperties.get(clazz);
+    private static List<String> getPossibleFieldNamesForProperty( final String inPropName)
+    {
+	return Arrays.asList( inPropName,
+				"_" + inPropName,
+				"m_" + Character.toUpperCase( inPropName.charAt(0) ) + inPropName.substring(1));
+    }
+
+    private Map<String,Collection<PropertyDescriptor>> getClassProperties(Class<?> clazz) {
+        Map<String,Collection<PropertyDescriptor>> properties = classProperties.get(clazz);
         if (properties == null) {
-            properties = new HashMap<String, PropertyDescriptor>();
+            properties = new HashMap<String,Collection<PropertyDescriptor>>();
 
 	    final Collection<PropertyDescriptor>	thePropDescriptors = getPropertyDescriptors(clazz);
 
             for (PropertyDescriptor property : thePropDescriptors) {
                 String name;
-                IndexableAttribute attribute = getIndexableAttribute(property);
+                IndexableAttribute attribute = getIndexableAttribute( clazz, property);
                 if (attribute != null && attribute.getIndexName() != null) {
                     name = attribute.getIndexName();
                 } else {
@@ -239,33 +275,41 @@ public class AttributeSourceImpl implements AttributeSource {
 		}
                 name = name == null ? property.getName() : name;
 
-		final PropertyDescriptor	theCurrProperty = properties.get(name);
+		///////////////////////////////////////////////////////////////////////////
 
-		if ( theCurrProperty != null && ( property.getReadMethod() == null && property != null)) {
-			// logger.trace( ":: SKIP BAD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
+		if ( property.getReadMethod() == null)
+		{
 			continue;
 		}
 
-		// logger.trace( ":: FOR " + clazz + ", ADD '" + name + "' ... R = " + property.getReadMethod() + ", W = " + property.getWriteMethod() + " / " + property.getPropertyType());
+		///////////////////////////////////////////////////////////////////////////
 
-		properties.put(name, property);
+		final Collection<PropertyDescriptor>	x = properties.get(name);
+
+		if ( x == null)
+		{
+			properties.put( name, Sets.newHashSet(property));
+		}
+		else
+		{
+			x.add(property);
+		}
             }
-            Map<String, PropertyDescriptor> p = classProperties.putIfAbsent(clazz, properties);
+
+	    ///////////////////////////////////////////////////////////////////////////////
+
+            Map<String,Collection<PropertyDescriptor>> p = classProperties.putIfAbsent(clazz, properties);
             properties = p != null ? p : properties;
         }
         return properties;
     }
  
-    private IndexableAttribute getIndexableAttribute(PropertyDescriptor property) {
+    private IndexableAttribute getIndexableAttribute(final Class<?> inClass, PropertyDescriptor property) {
         IndexableAttribute indexableAttr = indexableAttributes.get(property);
-        // System.out.println( "--> " + _propertyDescriptorString(property) + " => " + indexableAttr);
         if (indexableAttr == null) {
-            Indexable indexable = getAnnotation(property, Indexable.class);
-	    // System.out.println( "----> " + propertyDescriptorString(property) + " => " + indexable);
+            Indexable indexable = getAnnotation( inClass, property, Indexable.class);
             if (indexable != null) {
-		// System.out.println( "=== " + indexable);
                 indexableAttr = AttributeBuilder.build(indexable);
-		// System.out.println( "===> " + indexableAttr);
                 IndexableAttribute i = indexableAttributes.putIfAbsent(property, AttributeBuilder.build(indexable));
                 indexableAttr = i != null ? i : indexableAttr;
             }
@@ -276,7 +320,7 @@ public class AttributeSourceImpl implements AttributeSource {
     private SerializableAttribute getSerializableAttribute(PropertyDescriptor property) {
         SerializableAttribute serializableAttr = serializableAttributes.get(property);
         if (serializableAttr == null) {
-            Serializable serializable = getAnnotation(property, Serializable.class);
+            Serializable serializable = getAnnotation( null, property, Serializable.class);
             if (serializable != null) {
                 serializableAttr = AttributeBuilder.build(serializable);
                 SerializableAttribute s = serializableAttributes.putIfAbsent(property, serializableAttr);
@@ -293,14 +337,15 @@ public class AttributeSourceImpl implements AttributeSource {
                 // TODO [alois.cochard] warn about ignored properties
                 excluded = true;
             } else {
-                excluded = getAnnotation(property, Exclude.class) != null;
+                excluded = getAnnotation( null, property, Exclude.class) != null;
                 if (excluded) {
+//		    System.out.println( "@@--> Marked as excluded: " + property.getReadMethod());
                     // Warn if other annotation present
                     List<Class<?>> annotationTypes = new ArrayList<Class<?>>();
-                    if (getAnnotation(property, Serializable.class) != null) {
+                    if (getAnnotation( null, property, Serializable.class) != null) {
                         annotationTypes.add(Serializable.class);
                     }
-                    if (getAnnotation(property, Indexable.class) != null) {
+                    if (getAnnotation( null, property, Indexable.class) != null) {
                         annotationTypes.add(Indexable.class);
                     }
                     for (Class<?> annotationType : annotationTypes) {
@@ -320,8 +365,14 @@ public class AttributeSourceImpl implements AttributeSource {
         return getSearchableAttribute(clazz) != null;
     }
 
-    private String propertyDescriptorString( final PropertyDescriptor inPD)
+    private static String propertyDescriptorString( final PropertyDescriptor inPD)
     {
 	    return "[R: " + inPD.getReadMethod() + ", W: " + inPD.getWriteMethod() + "]";
     }
+
+	@Override
+	public Iterable<Entry<Class<?>,SearchableAttribute>> getSearchableAttributes()
+	{
+		return searchables.entrySet();
+	}
 }
