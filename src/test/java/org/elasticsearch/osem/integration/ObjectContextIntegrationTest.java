@@ -57,6 +57,8 @@ public class ObjectContextIntegrationTest {
 
     private ObjectContext context;
 
+    private final static String	TEST_TYPE = "???";	// (AGR) 24 October 2011
+
     @BeforeMethod()
     public void doStart() {
         context = ObjectContextFactory.create();
@@ -93,7 +95,7 @@ public class ObjectContextIntegrationTest {
 	}
 
         // Mapping
-        node.client().admin().indices().preparePutMapping("twitter").setSource(context.getMapping(Tweet.class)).execute().actionGet();
+        node.client().admin().indices().preparePutMapping("twitter").setType(TEST_TYPE).setSource(context.getMapping(Tweet.class)).execute().actionGet();
         // Add
         node.client().prepareIndex("twitter", "tweet", "1").setSource(context.write(tweet)).execute().actionGet();
         // Refresh
@@ -109,7 +111,7 @@ public class ObjectContextIntegrationTest {
             AssertJUnit.assertEquals(tweet.getDate(), t.getDate());
             return;
         }
-        Assert.fail();
+        Assert.fail("Expecting *one* match, but got " + searchResponse.getHits().hits().length);
     }
 
     @Test
@@ -139,13 +141,13 @@ public class ObjectContextIntegrationTest {
 	}
 
         // Mapping
-        node.client().admin().indices().preparePutMapping("users").setSource(context.getMapping(User.class)).execute().actionGet();
+        node.client().admin().indices().preparePutMapping("users").setType(TEST_TYPE).setSource(context.getMapping(User.class)).execute().actionGet();
         // Add
         node.client().prepareIndex("users", "user").setSource(context.write(user)).execute().actionGet();
         // Refresh
         node.client().admin().indices().prepareRefresh("users").execute().actionGet();
         // Search
-        SearchResponse searchResponse = node.client().prepareSearch("users").setSearchType(SearchType.DFS_QUERY_AND_FETCH).setQuery(
+        SearchResponse searchResponse = node.client().prepareSearch("users").setTypes(TEST_TYPE).setSearchType(SearchType.DFS_QUERY_AND_FETCH).setQuery(
                 QueryBuilders.termQuery("name", "aloiscochard")).setExplain(true).execute().actionGet();
         for (SearchHit hit : searchResponse.getHits()) {
             User u = context.read(hit);
@@ -157,6 +159,6 @@ public class ObjectContextIntegrationTest {
             // TODO [alois.cochard] check inner objects
             return;
         }
-        Assert.fail();
+        Assert.fail("Expecting *one* match, but got " + searchResponse.getHits().hits().length);
     }
 }

@@ -17,6 +17,7 @@
 package org.elasticsearch.gps.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,8 @@ import org.compass.core.mapping.Cascade;
 import org.compass.core.spi.InternalCompass;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.IndexPlan;
 
@@ -43,6 +46,8 @@ import org.elasticsearch.gps.IndexPlan;
  * @author kimchy
  */
 public class SingleCompassGps extends AbstractCompassGps {
+
+    protected ESLogger log = Loggers.getLogger( getClass() );
 
     private Compass compass;
 
@@ -114,6 +119,8 @@ public class SingleCompassGps extends AbstractCompassGps {
     {
 	final IndicesAdminClient		theClient = compass.getClient().admin().indices();
 
+	log.info("doIndex(): IndexPlan = " + inIndexPlan);
+
 	if ( inIndexPlan.getTypes() == null)
 	{
 		// Just delete all... actually *don't*, cos we need to recreate existing ones, and we don't have a way of doing that right now...
@@ -131,13 +138,19 @@ public class SingleCompassGps extends AbstractCompassGps {
 			theTypes.add( compass.getObjectContext().getType(eachClazz) );
 		}
 
+		log.info("Index types: " + theTypes);
+
 		// Delete all...
 
 		final String[]	theIndexesArray = theTypes.toArray( new String[ theTypes.size()]);
 
+		log.info("Deleting indices: " + Arrays.toString(theIndexesArray));
+
 		compass.getClient().admin().indices().prepareDelete(theIndexesArray).execute().actionGet();
 
 		// (Re-)create all...
+
+		log.info("CREATING indices: " + Arrays.toString(theIndexesArray));
 
 		for ( String eachIndex : theIndexesArray)
 		{

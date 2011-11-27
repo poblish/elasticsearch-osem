@@ -18,7 +18,6 @@ package org.compass.core;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import org.compass.integration.InternalResource;
 import org.compass.integration.Resource;
 import org.compass.integration.Resources;
@@ -61,7 +60,8 @@ public interface CompassSearchSession {
 		private final Client		m_Client;
 		private final ObjectContext	m_Ctxt;
 
-		private final static String	DEFAULT_TYPE = "???";
+		private final static String	DEFAULT_TYPE = "default";
+		private final static int		DEFAULT_MATCHES_COUNT = 99999;	// (AGR) 3 October 2011. A bit iffy!!!
 
 		private final static ESLogger	logger = Loggers.getLogger( InternalSearchHelper.class );
 
@@ -76,10 +76,10 @@ public interface CompassSearchSession {
 		{
 			Preconditions.checkArgument( inIndices.length >= 1);
 
-			logger.info( "getHits( final QueryBuilder inQuery, final String... inIndices)", (Object) inIndices);
-			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
+//			logger.info( "getHits( final QueryBuilder inQuery, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
 
-			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).execute().actionGet();
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(DEFAULT_MATCHES_COUNT).execute().actionGet();
 			return _getHits(theResp);
 		}
 
@@ -88,10 +88,10 @@ public interface CompassSearchSession {
 		{
 			Preconditions.checkArgument( inIndices.length >= 1);
 
-			logger.info( "getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final String... inIndices)");
-			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices) + ", applying " + inFilter);
+//			logger.info( "getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final String... inIndices)");
+//			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices) + ", applying " + inFilter);
 
-			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).execute().actionGet();
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(DEFAULT_MATCHES_COUNT).execute().actionGet();
 			return _getHits(theResp);
 		}
 
@@ -100,8 +100,8 @@ public interface CompassSearchSession {
 		{
 			Preconditions.checkArgument( inIndices.length >= 1);
 
-			logger.info( "getHits( final QueryBuilder inQuery, final int inMaxNum, final String... inIndices)", (Object) inIndices);
-			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
+//			logger.info( "getHits( final QueryBuilder inQuery, final int inMaxNum, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
 
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).execute().actionGet();
 			return _getHits(theResp);
@@ -112,8 +112,8 @@ public interface CompassSearchSession {
 		{
 			Preconditions.checkArgument( inIndices.length >= 1);
 
-			logger.info( "getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String... inIndices)", (Object) inIndices);
-			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices) + ", applying " + inFilter);
+//			logger.info( "getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices) + ", applying " + inFilter);
 
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(inMaxNum).execute().actionGet();
 			return _getHits(theResp);
@@ -122,7 +122,7 @@ public interface CompassSearchSession {
 		// @Override
 		public GetResponse getResource( final String inIdx, final String inId)
 		{
-			logger.info( "getResource('" + inIdx + "'," + inId + ")");
+//			logger.info( "getResource('" + inIdx + "'," + inId + ")");
 
 			return m_Client.prepareGet( inIdx, DEFAULT_TYPE, inId).execute().actionGet();
 		}
@@ -149,7 +149,7 @@ public interface CompassSearchSession {
 
 			final GetResponse	theResp = getResource( inIdx, inId);
 
-			return theResp.exists() ? Resources.fromMap( m_Ctxt, theResp.getSource() ) : null;
+			return theResp.exists() ? Resources.fromSourceMap( theResp.getSource() ) : null;
 		}
 
 		@Override
@@ -163,12 +163,12 @@ public interface CompassSearchSession {
 		{
 			final XContentBuilder	theResBuilder = m_Ctxt.write(inResource);
 
-			try {
-				System.out.println("Saving '" + inResource.getAlias() + "' Resource: " + theResBuilder.string());
-			}
-			catch (IOException ex) {
-				// NOOP
-			}
+//			try {
+//				System.out.println("Saving '" + inResource.getAlias() + "' Resource: " + theResBuilder.string());
+//			}
+//			catch (IOException ex) {
+//				// NOOP
+//			}
 
 			m_Client.prepareIndex( inResource.getAlias(), DEFAULT_TYPE, inResource.getId())
 				.setSource(theResBuilder)
@@ -178,53 +178,73 @@ public interface CompassSearchSession {
 		@Override
 		public SearchHits sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)
 		{
-			logger.info( "sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)", (Object) inIndices);
-			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
+//			logger.info( "sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
 
-			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).addSort( inSortField, SortOrder.ASC).execute().actionGet();
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(DEFAULT_MATCHES_COUNT).addSort( inSortField, SortOrder.ASC).execute().actionGet();
 			return _getHits(theResp);
 		}
 
 		@Override
 		public SearchHits sortedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
-			logger.info( "sortedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
-			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
+//			logger.info( "sortedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
 
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).addSort( inSortField, SortOrder.ASC).execute().actionGet();
 			return _getHits(theResp);
 		}
 
 		@Override
+		public SearchHits sortedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String inSortField, final String... inIndices)
+		{
+//			logger.info( "sortedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
+
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(inMaxNum).addSort( inSortField, SortOrder.ASC).execute().actionGet();
+			return _getHits(theResp);
+		}
+
+		@Override
 		public SearchHits reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)
 		{
-			logger.info( "reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)", (Object) inIndices);
-			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
+//			logger.info( "reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
 
-			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).addSort( inSortField, SortOrder.DESC).execute().actionGet();
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(DEFAULT_MATCHES_COUNT).addSort( inSortField, SortOrder.DESC).execute().actionGet();
 			return _getHits(theResp);
 		}
 
 		@Override
 		public SearchHits reversedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
-			logger.info( "reversedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
-			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
+//			logger.info( "reversedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
 
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).addSort( inSortField, SortOrder.DESC).execute().actionGet();
 			return _getHits(theResp);
 		}
 
 		@Override
-		public Resource getResourceOrNull( final Class<?> inIdx, final Serializable inId)
+		public SearchHits reversedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
-			throw new UnsupportedOperationException("Not supported yet.");
+//			logger.info( "reversedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
+//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
+
+			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(inMaxNum).addSort( inSortField, SortOrder.DESC).execute().actionGet();
+			return _getHits(theResp);
 		}
 
 		@Override
-		public Resource getResourceOrNull( final Class<?> inIdx, final long inId)
+		public Resource getResourceOrNull( final Class<?> inClass, final Serializable inId)
 		{
-			throw new UnsupportedOperationException("Not supported yet.");
+			return getResourceOrNull( m_Ctxt.getType(inClass), inId);
+		}
+
+		@Override
+		public Resource getResourceOrNull( final Class<?> inClass, final long inId)
+		{
+			return getResourceOrNull( m_Ctxt.getType(inClass), Long.valueOf(inId));
 		}
 
 		@Override
@@ -236,21 +256,35 @@ public interface CompassSearchSession {
 		@Override
 		public void index( final String inIndex, final String inType, final String inId, final Object inInitialObject)
 		{
-			final IndexResponse	theResponse = m_Client.prepareIndex( inIndex, inType, inId)
-									.setSource( m_Ctxt.write(inInitialObject) )
-									.execute()
-									.actionGet();
+			index( inIndex, inType, inId, m_Ctxt.write(inInitialObject));
 		}
 
 		@Override
 		public void index( final String inIndex, final String inId, final XContentBuilder inInitialBuilder)
 		{
-			index( inIndex, /* FIXME */ "xxx", inId, inInitialBuilder);
+			index( inIndex, DEFAULT_TYPE, inId, inInitialBuilder);
 		}
 
 		@Override
 		public void index( final String inIndex, final String inType, final String inId, final XContentBuilder inInitialBuilder)
 		{
+//			try {
+//				System.out.println("\n#### Indexing: '" + inIndex + "' #" + inId + " ... " + inInitialBuilder.string() + "####\n");
+//			}
+//			catch (IOException ex) {}
+//
+//			final boolean		mappingAcked = m_Client.admin().indices().preparePutMapping(inIndex)
+//											  .setSource( m_Ctxt.getMapping(inClass) )
+//											  .setType(DEFAULT_TYPE)
+//											  .setIgnoreConflicts(false)
+//											  .execute()
+//											  .actionGet().getAcknowledged();
+//
+//			if (!mappingAcked)	// FIXME!
+//			{
+//				throw new RuntimeException("Mapping for '" + inIndex + "' not acknowledged!");
+//			}
+
 			final IndexResponse	theResponse = m_Client.prepareIndex( inIndex, inType, inId)
 									.setSource(inInitialBuilder)
 									.execute()
@@ -259,9 +293,11 @@ public interface CompassSearchSession {
 
 		private SearchHits _getHits( final SearchResponse inResponse)
 		{
-			logger.info( "@ Response = " + inResponse);
+			final SearchHits		theHits = inResponse.getHits();
 
-			return inResponse.getHits();
+		//	logger.info( "@ Response = " + ( theHits.getTotalHits() > 100 ? "(> 100 hits)" : inResponse));
+
+			return theHits;
 		}
 
 		@Override
@@ -283,13 +319,13 @@ public interface CompassSearchSession {
      * @return Runtime settings applies on the session level
      */
     // (AGR_OSEM) ... CompassSettings getSettings();
-    
+
     /**
      * When not using the {@link org.compass.core.CompassTransaction} interface, will begin a local transaction
      * instead of the configured transaction.
      */
     // (AGR_OSEM) ... CompassSearchSession useLocalTransaction();
-    
+
     /**
      * Returns a Resource that match the mapping specified for the defined class
      * type, and specified id. The id can be an object of the class (with the id

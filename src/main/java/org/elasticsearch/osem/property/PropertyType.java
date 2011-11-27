@@ -21,6 +21,7 @@ package org.elasticsearch.osem.property;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.util.Locale;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
@@ -58,7 +59,9 @@ public enum PropertyType {
     Object,
     Short(Short.class, new ShortTypeAdapter()),
     String(String.class, new StringTypeAdapter()),
-    Uri(URI.class, new UriTypeAdapter());
+    Uri(URI.class, new UriTypeAdapter()),
+//    Locale(Locale.class, new LocaleTypeAdapter())
+    ;
 
     public static PropertyType get(Class<?> clazz) {
         for (PropertyType type : PropertyType.values()) {
@@ -117,6 +120,8 @@ abstract class AbstractTypeAdapter<T> implements PropertyTypeAdapter<T> {
                 return Field.Index.NOT_ANALYZED;
             case NO:
                 return Field.Index.NO;
+            case NA:	// (AGR) 24 October 2011. Seems sensible. Prevents NPE within ElasticSearch
+                return Field.Index.NOT_ANALYZED;
         }
         return null;
     }
@@ -357,7 +362,7 @@ abstract class AbstractStringTypeAdapter<T> extends AbstractTypeAdapter<T> {
         if (indexable.getIncludeInAll() != null) {
             builder.includeInAll(indexable.getIncludeInAll());
         }
-        if (indexable.getIndex() != Index.ANALYZED) {	// (AGR) Fixed. Want values different from the default!
+        if ( indexable.getIndex() != null && indexable.getIndex() != Index.ANALYZED) {	// (AGR) Fixed. Want values different from the default!
             builder.index(getIndex(indexable.getIndex()));
         }
         // TODO [alois.cochard] Link with AnalysisService to get the named analyzer
@@ -409,5 +414,12 @@ class UriTypeAdapter extends AbstractStringTypeAdapter<URI> {
             throw new RuntimeException(e);
         }
     }
+}
 
+class LocaleTypeAdapter extends AbstractStringTypeAdapter<Locale> {
+
+    @Override
+    public Locale read(SerializableAttribute attribute, String value) {
+	return new Locale(value);
+    }
 }

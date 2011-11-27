@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 
 import org.elasticsearch.common.base.Objects;
 import org.elasticsearch.osem.annotations.Searchable;
-import org.elasticsearch.osem.core.ObjectContext;
 
 /**
  *
@@ -34,12 +33,21 @@ public class InternalResource implements Resource
 	/****************************************************************************
 	****************************************************************************/
 	@SuppressWarnings("unchecked")
-	public InternalResource( final ObjectContext inCtxt, final Map<String,Object> inMap)
+	public static InternalResource fromJsonMap( final String inIdx, final String inId, final Map<String,Object> inMap)
 	{
-		m_Id = (String) inMap.get("id");
-		m_Index = (String) inMap.get("index");
+		final InternalResource	theRes = new InternalResource( inIdx, inId);
 
-		setSourceProperties((Map<String,Object>) inMap.get("properties"));
+		return theRes.setSourceProperties(inMap);
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	@SuppressWarnings("unchecked")
+	public static InternalResource fromSourceMap( final Map<String,Object> inMap)
+	{
+		final InternalResource	theRes = new InternalResource((String) inMap.get("index"), (String) inMap.get("id"));
+
+		return theRes.setSourceProperties((Map<String,Object>) inMap.get("properties"));
 	}
 
 	/****************************************************************************
@@ -71,47 +79,15 @@ public class InternalResource implements Resource
 			m_Properties.put( eachEntry.getKey(), eachEntry.getValue());
 		}
 
-	/*	@SuppressWarnings("unchecked")
-		final List<HashMap<String,String>>	theOsemProps = ((List<HashMap<String,String>>) inMap.get("properties"));
-
-		if ( theOsemProps != null)
-		{
-			for ( final HashMap<String,String> eachMap : theOsemProps)
-			{
-				// m_Properties.add( new InternalProperty( eachMap.get("key"), eachMap.get("value")) );
-			}
-		}
-
-		for ( Entry<String,Object> eachEntry : inMap.entrySet())
-		{
-			if (eachEntry.getKey().equals("properties"))	continue;
-
-			// m_Properties.add( new InternalProperty( eachEntry.getKey(), String.valueOf( eachEntry.getValue() )) );
-		}
-*/
 		return this;
 	}
-
-	/****************************************************************************
-	***************************************************************************
-	private Collection<Property> _getMatches( final String inName)
-	{
-		return Collections2.filter( m_Properties, new Predicate<Property>() {
-
-			@Override
-			public boolean apply( final Property inProp)
-			{
-				return inProp.getName().equals(inName);
-			}
-		});
-	}*/
 
 	/****************************************************************************
 	****************************************************************************/
 	@Override
 	public void removeProperties( final String inName)
 	{
-		m_Properties.remove(inName);	// m_Properties.removeAll( _getMatches(inName) );
+		m_Properties.remove(inName);
 	}
 
 	/****************************************************************************
@@ -119,7 +95,7 @@ public class InternalResource implements Resource
 	@Override
 	public void removeProperty( final String inName)
 	{
-		m_Properties.remove(inName);	// m_Properties.removeAll( _getMatches(inName) );	// FIXME. Check only 1 match
+		m_Properties.remove(inName);
 	}
 
 	/****************************************************************************

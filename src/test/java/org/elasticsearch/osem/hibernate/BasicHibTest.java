@@ -4,14 +4,14 @@
  */
 package org.elasticsearch.osem.hibernate;
 
-import org.elasticsearch.osem.core.ObjectContextFactory;
 import java.util.Collection;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import java.util.Locale;
+
+import javax.naming.Context;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+
 import org.compass.core.Compass;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -22,6 +22,8 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.gps.CompassGps;
 import org.elasticsearch.gps.device.hibernate.HibernateGpsDevice;
 import org.elasticsearch.gps.impl.SingleCompassGps;
+import static org.elasticsearch.index.query.QueryBuilders.*;
+import org.elasticsearch.osem.core.ObjectContextFactory;
 import org.elasticsearch.osem.test.entities.impl.Actor;
 import org.elasticsearch.osem.test.entities.impl.Blog;
 import org.elasticsearch.osem.test.entities.impl.Feed;
@@ -32,8 +34,9 @@ import org.elasticsearch.osem.test.entities.interfaces.BlogIF;
 import org.elasticsearch.osem.test.entities.interfaces.FeedIF;
 import org.elasticsearch.test.ElasticSearchTests;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  *
@@ -57,11 +60,20 @@ public class BasicHibTest
 	@BeforeMethod
 	public void setUp()
 	{
-		s_Client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.103", 9300));
+		System.setProperty( Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.rmi.registry.RegistryContextFactory");
+		System.setProperty( Context.PROVIDER_URL, "rmi://localhost:1099");
+
+		try {
+		    java.rmi.registry.LocateRegistry.createRegistry(1099);
+		} catch (Exception e) {
+
+		}
+
+		s_Client = new TransportClient().addTransportAddress( new InetSocketTransportAddress("10.10.10.101", 9300));
 
 		// s_Client.prepareDeleteByQuery( IDX_ACTOR, IDX_ARTICLE, IDX_BLOG, IDX_FEED).setQuery( matchAllQuery() ).execute().actionGet();
 
-		/* Clear down... */ ElasticSearchTests.deleteAllIndexes(s_Client);
+		/* Clear down... ElasticSearchTests.deleteAllIndexes(s_Client); */
 	}
     
 	/****************************************************************************

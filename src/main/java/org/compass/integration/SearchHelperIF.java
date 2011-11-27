@@ -23,9 +23,11 @@ public interface SearchHelperIF
 
 	SearchHits sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices);
 	SearchHits sortedHits( final QueryBuilder inQuery, final int inMax, final String inSortField, final String... inIndices);
+	SearchHits sortedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMax, final String inSortField, final String... inIndices);
 
 	SearchHits reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices);
 	SearchHits reversedHits( final QueryBuilder inQuery, final int inMax, final String inSortField, final String... inIndices);
+	SearchHits reversedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMax, final String inSortField, final String... inIndices);
 
 	Resource createResource( final String inIdx);
 	void saveResource( final Resource inResource);

@@ -109,7 +109,7 @@ public abstract class AbstractJpaGpsDeviceTests extends TestCase {
 
 	// (AGR_OSEM) ...  setUpCoreCompass(cpConf);
 
-	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.101", ObjectContextFactory.create());
     }
 
     protected void setUpGps() {

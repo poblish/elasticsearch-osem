@@ -18,6 +18,7 @@ public interface Resource
 	double getDoubleValue(String name);
 	boolean getBooleanValue(String name);
 
+	Map<String,Object> getProperties();
 	void removeProperties( final String inName);
 	void removeProperty( final String inName);
 

@@ -37,7 +37,7 @@ import org.hibernate.ejb.HibernatePersistence;
 public class EmbeddedHibernateSimpleJpaGpsDeviceTests extends AbstractSimpleJpaGpsDeviceTests {
 
     protected void setUpCompass() {
-        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());	// (AGR) FIXME... HibernateJpaHelper.getCompass(entityManagerFactory);
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.101", ObjectContextFactory.create());	// (AGR) FIXME... HibernateJpaHelper.getCompass(entityManagerFactory);
         assertNotNull(compass);
     }
 

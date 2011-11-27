@@ -43,7 +43,7 @@ public class NullIdCollectionTests extends TestCase {
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 //        compass = cpConf.buildCompass();
 
-	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", theObjectContext);	// cpConf.buildCompass();
+	compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.101", theObjectContext);	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();

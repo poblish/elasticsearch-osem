@@ -95,47 +95,6 @@ public abstract class AbstractCompassGps implements CompassGpsInterfaceDevice {
 	    return false;
     }
 
-/* (AGR_OSEM)
-    protected boolean hasRootMappingForEntity(Class clazz, Compass checkedCompass) {
-        return getRootMappingForEntity(clazz, checkedCompass) != null;
-    }
-
-    protected ResourceMapping getRootMappingForEntity(Class clazz, Compass checkedCompass) {
-        return ((InternalCompass) checkedCompass).getMapping().getRootMappingByClass(clazz);
-    }
-
-    protected boolean hasRootMappingForEntity(String name, Compass checkedCompass) {
-        return getRootMappingForEntity(name, checkedCompass) != null;
-    }
-
-    protected ResourceMapping getMappingForEntity(String name, Compass checkedCompass) {
-        ResourceMapping resourceMapping = ((InternalCompass) checkedCompass).getMapping().getMappingByAlias(name);
-        if (resourceMapping != null) {
-            return resourceMapping;
-        }
-        try {
-            Class clazz = ClassUtils.forName(name, checkedCompass.getSettings().getClassLoader());
-            return ((InternalCompass) checkedCompass).getMapping().getMappingByClass(clazz);
-        } catch (Exception e) {
-            // do nothing
-        }
-        return null;
-    }
-
-    protected ResourceMapping getRootMappingForEntity(String name, Compass checkedCompass) {
-        ResourceMapping resourceMapping = ((InternalCompass) checkedCompass).getMapping().getRootMappingByAlias(name);
-        if (resourceMapping != null) {
-            return resourceMapping;
-        }
-        try {
-            Class clazz = ClassUtils.forName(name, checkedCompass.getSettings().getClassLoader());
-            return ((InternalCompass) checkedCompass).getMapping().getRootMappingByClass(clazz);
-        } catch (Exception e) {
-            // do nothing
-        }
-        return null;
-    }
-*/
     public synchronized void index() throws CompassGpsException, IllegalStateException {
         index(new DefaultIndexPlan());
     }

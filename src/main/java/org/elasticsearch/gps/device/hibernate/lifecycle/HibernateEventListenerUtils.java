@@ -41,7 +41,7 @@ import org.hibernate.type.Type;
  */
 public abstract class HibernateEventListenerUtils {
 
-	private static Logger		s_Logger = Logger.getLogger( HibernateEventListenerUtils.class );
+	private static Logger	s_Logger = Logger.getLogger( HibernateEventListenerUtils.class );
 
     public static void registerRemovalHook(EventSource eventSource, Map<Object, Collection> pendingMap, Object entity) {
         eventSource.getTransaction().registerSynchronization(new RemoveFromPending(pendingMap, entity));
@@ -60,11 +60,17 @@ public abstract class HibernateEventListenerUtils {
 
 	public static Collection getUnpersistedCascades( CompassGpsInterfaceDevice compassGps, Object entity, SessionFactoryImplementor sessionFactory, Cascade cascade, Collection visited)
 	{
-		s_Logger.info("ENTRYPOINT = " + entity);
+		if (s_Logger.isDebugEnabled())
+		{
+			s_Logger.debug("ENTRYPOINT = " + entity);
+		}
 
 		Collection c = _getUnpersistedCascades( compassGps, entity, sessionFactory, cascade, visited, null, false);
 
-		s_Logger.debug("DONE: got " + c.size() + " deps.");
+		if (s_Logger.isDebugEnabled())
+		{
+			s_Logger.debug("DONE: got " + c.size() + " deps.");
+		}
 
 		return c;
 	}
@@ -86,7 +92,7 @@ public abstract class HibernateEventListenerUtils {
 
 		visited.add(entity);
 
-		if (isDangerous)
+		if (isDangerous && s_Logger.isDebugEnabled())
 		{
 			s_Logger.debug("  size() = " + visited.size() + ", JUST ADDED: " + entity);
 		}

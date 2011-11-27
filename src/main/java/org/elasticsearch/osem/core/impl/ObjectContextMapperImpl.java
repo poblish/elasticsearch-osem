@@ -74,10 +74,10 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
 
     @Override
     public ObjectContextMapper add(Class<?> clazz) {
-	return _add( clazz, "");
+	return _add(clazz);	// , "");
     }
 
-    private ObjectContextMapper _add(Class<?> clazz, final String inPrefix) {
+    private ObjectContextMapper _add(Class<?> clazz /* , final String inPrefix */) {
         if (!types.contains(clazz)) {
             for (PropertyDescriptor property : attributes.getSerializableProperties(clazz).keySet()) {
                 PropertySignature composite = signatures.get(property).getComposite();
@@ -90,7 +90,7 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
                     }
 
                     if (composite.getTypeClass() != null && !composite.getType().isPrimitive()) {
-                        _add(composite.getTypeClass(), inPrefix + "  ");
+                        _add(composite.getTypeClass() /* , inPrefix + "  " */);
                     }
                 }
             }
@@ -170,7 +170,7 @@ public class ObjectContextMapperImpl implements ObjectContextMapper {
         try {
             // FIXME [alois.cochard] ContentBuilder: cached or not cached ? that's the question ...
             XContentBuilder builder = JsonXContent.contentBuilder();
-            BuilderContext context = new BuilderContext(new ContentPath());
+            BuilderContext context = new BuilderContext( /* (AGR) 17 Nov2 011. FIXME. Is this OK? */ null /**/, new ContentPath());
             builder.startObject();
             build(clazz, getType(clazz)).build(context).toXContent(builder, null);
             builder.endObject();

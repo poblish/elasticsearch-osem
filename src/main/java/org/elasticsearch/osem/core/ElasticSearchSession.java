@@ -4,11 +4,11 @@
  */
 package org.elasticsearch.osem.core;
 
-import java.io.IOException;
 
 import org.compass.core.CompassException;
 import org.compass.core.CompassSession;
 import org.compass.core.config.CompassSettings;
+import org.compass.integration.Resource;
 import org.compass.integration.SearchHelperIF;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -30,7 +30,9 @@ public class ElasticSearchSession implements CompassSession
 	private final ObjectContext	m_Ctxt;
 	private final Client		m_Client;
 
-	private final static String	DEFAULT_TYPE = "???";
+	private final static Class[]	EMPTY_ARRAY = new Class[]{};
+
+	private final static String	DEFAULT_TYPE = "default";
 
 	private static final ESLogger	logger = Loggers.getLogger( ElasticSearchSession.class );
 
@@ -68,42 +70,65 @@ public class ElasticSearchSession implements CompassSession
 
 	/****************************************************************************
 	****************************************************************************/
+	private String getEntityId( final Object inEntity)
+	{
+		String	theId = m_Ctxt.getId(inEntity);
+
+		if ( theId != null) {
+			return theId;
+		}
+
+		///////////////////////////////////////////////////////////////////////////
+		
+		theId = m_Ctxt.getAttributeId(inEntity);
+
+		if ( theId != null) {
+			return theId;
+		}
+
+		///////////////////////////////////////////////////////////////////////////
+		
+		try
+		{
+			// (AGR) FIXME. Really should cache this in a {Class->Method} concurrent Map!
+
+			theId = String.valueOf( inEntity.getClass().getDeclaredMethod( "getId", EMPTY_ARRAY).invoke(inEntity) );
+
+			if ( theId != null) {
+				return theId;
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.error( ex.getMessage() + " for " + inEntity);
+		}
+
+		throw new RuntimeException("Null Id - cannot continue.");
+	}
+
+	/****************************************************************************
+	****************************************************************************/
 	@Override
 	public void create( final Object inEntity) throws CompassException
 	{
-		logger.debug("create() for " + inEntity);	// theSsn = " + this);
+//		logger.debug("create() for " + inEntity);
 
-		String		theId = m_Ctxt.getId(inEntity);
-
-		if ( theId == null)
-		{
-			theId = m_Ctxt.getAttributeId(inEntity);
-
-			if ( theId == null)
-			{
-				throw new RuntimeException("Null Id - cannot continue.");
-			}
-		}
-
+		final String		theId = getEntityId(inEntity);
 		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
-	//	final String		theIdx = m_NamingStrategy.toIndexName( inEntity.getClass() );
 
 		final XContentBuilder	theBuilder = m_Ctxt.write(inEntity);
-
-		try
-		{
-			System.out.println("create() for " + inEntity + " : " + theBuilder.string());
-		}
-		catch (IOException ex) {
-			ex.printStackTrace();
-		}
 
 		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx.toLowerCase(), DEFAULT_TYPE, theId)
 								.setSource(theBuilder)
 								.execute()
 								.actionGet();
 
-		logger.debug("create() DONE: " + theIdx + "/" + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
+		if ( theResponse.id() == null)
+		{
+			throw new RuntimeException("create() returned null Id: expected " + theIdx + " #" + theId);
+		}
+
+		logger.debug("create() DONE: " + theIdx + "/" + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version() + " for " + inEntity);
 	}
 
 	/****************************************************************************
@@ -112,36 +137,30 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void save( final Object inEntity) throws CompassException
 	{
-		logger.debug("save() theSsn = " + this);
+		// logger.debug("save() theSsn = " + this);
 
-		String		theId = m_Ctxt.getId(inEntity);
-
-		if ( theId == null)
-		{
-			theId = m_Ctxt.getAttributeId(inEntity);
-
-			if ( theId == null)
-			{
-				throw new RuntimeException("Null Id - cannot continue.");
-			}
-		}
-
-		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
+		final String		theId = getEntityId(inEntity);
+		final String		theIdx = ( inEntity instanceof Resource) ? ((Resource) inEntity).getAlias() : m_Ctxt.getType( inEntity.getClass() );
 
 		final XContentBuilder	theBuilder = m_Ctxt.write(inEntity);
 
-		try
-		{
-			System.out.println("create() for " + inEntity + " : " + theBuilder.string());
-		}
-		catch (IOException ex) {
-			ex.printStackTrace();
-		}
+//		try
+//		{
+//			System.out.println("create() for " + inEntity + " : " + theBuilder.string());
+//		}
+//		catch (IOException ex) {
+//			ex.printStackTrace();
+//		}
 
 		final IndexResponse	theResponse = m_Client.prepareIndex( theIdx, DEFAULT_TYPE, theId)
 								.setSource(theBuilder)
 								.execute()
 								.actionGet();
+
+		if ( theResponse.id() == null)
+		{
+			throw new RuntimeException("save() returned null Id: expected " + theIdx + " #" + theId);
+		}
 
 		logger.debug("save() DONE: " + theIdx + "/" + theResponse.type() + " #" + theResponse.id() + " @ v." + theResponse.version());
 	}
@@ -154,18 +173,7 @@ public class ElasticSearchSession implements CompassSession
 	{
 		logger.debug("delete() theSsn = " + this);
 
-		String		theId = m_Ctxt.getId(inEntity);
-
-		if ( theId == null)
-		{
-			theId = m_Ctxt.getAttributeId(inEntity);
-
-			if ( theId == null)
-			{
-				throw new RuntimeException("Null Id - cannot continue.");
-			}
-		}
-
+		final String		theId = getEntityId(inEntity);
 		final String		theIdx = m_Ctxt.getType( inEntity.getClass() );
 
 		final DeleteResponse	theResponse = m_Client.prepareDelete( theIdx.toLowerCase(), DEFAULT_TYPE, theId).execute().actionGet();

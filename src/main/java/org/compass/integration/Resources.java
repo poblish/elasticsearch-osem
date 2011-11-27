@@ -5,7 +5,6 @@
 package org.compass.integration;
 
 import java.util.Map;
-import org.elasticsearch.osem.core.ObjectContext;
 import org.elasticsearch.search.SearchHit;
 
 /**
@@ -23,8 +22,15 @@ public class Resources
 
 	/****************************************************************************
 	****************************************************************************/
-	public static Resource fromMap( final ObjectContext inCtxt, final Map<String, Object> inMap)
+	public static Resource fromSourceMap( final Map<String, Object> inMap)
 	{
-		return new InternalResource( inCtxt, inMap);
+		return InternalResource.fromSourceMap(inMap);
+	}
+
+	/****************************************************************************
+	****************************************************************************/
+	public static Resource fromJsonMap( final String inIdx, final String inId, final Map<String, Object> inMap)
+	{
+		return InternalResource.fromJsonMap( inIdx, inId, inMap);
 	}
 }

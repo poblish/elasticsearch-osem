@@ -53,7 +53,7 @@ public class ProcessedInFlushTests extends TestCase {
 //                .configure("/org/compass/gps/device/hibernate/collection/processinflush/compass.cfg.xml");
 //        cpConf.getSettings().setBooleanSetting(CompassEnvironment.DEBUG, true);
 
-        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.103", ObjectContextFactory.create());	// cpConf.buildCompass();
+        compass = ElasticSearchTests.mockSimpleCompass( "10.10.10.101", ObjectContextFactory.create());	// cpConf.buildCompass();
 
         fileHandlerMonitor = FileHandlerMonitor.getFileHandlerMonitor(compass);
         fileHandlerMonitor.verifyNoHandlers();
