@@ -267,19 +267,25 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void evict(Object obj)
 	{
-		logger.warn("evict(): *Ignoring* call to evict: " + obj);
+		if (logger.isTraceEnabled()) {
+			logger.trace("evict(): *Ignoring* call to evict: " + obj);
+		}
 	}
 
 	@Override
 	public void evict(String alias, Object id)
 	{
-		logger.warn("evict(): *Ignoring* call to evict " + alias + " #" + id);
+		if (logger.isTraceEnabled()) {
+			logger.trace("evict(): *Ignoring* call to evict " + alias + " #" + id);
+		}
 	}
 
 	@Override
 	public void evictAll()
 	{
-		logger.warn("evict(): *Ignoring* call to evict all.");
+		if (logger.isTraceEnabled()) {
+			logger.trace("evict(): *Ignoring* call to evict all.");
+		}
 	}
 
 	@Override
@@ -351,7 +357,9 @@ public class ElasticSearchSession implements CompassSession
 	@Override
 	public void flush() throws CompassException
 	{
-		logger.warn("flush(): *Ignoring* call to flush.");
+		if (logger.isTraceEnabled()) {
+			logger.trace("flush(): *Ignoring* call to flush.");
+		}
 	}
 
 	@Override
