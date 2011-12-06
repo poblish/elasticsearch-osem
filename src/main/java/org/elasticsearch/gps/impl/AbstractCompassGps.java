@@ -23,6 +23,7 @@ import org.compass.core.Compass;
 import org.compass.core.mapping.Cascade;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.gps.CompassGpsDevice;
 import org.elasticsearch.gps.CompassGpsException;
 import org.elasticsearch.gps.DefaultIndexPlan;
@@ -105,6 +106,18 @@ public abstract class AbstractCompassGps implements CompassGpsInterfaceDevice {
 
     public void index(String... aliases) throws CompassGpsException, IllegalStateException {
         index(new DefaultIndexPlan().setAliases(aliases));
+    }
+
+    public synchronized void index( final Settings inEsSettings) throws CompassGpsException, IllegalStateException {
+        index(new DefaultIndexPlan(inEsSettings));
+    }
+
+    public void index( final Settings inEsSettings, Class... types) throws CompassGpsException, IllegalStateException {
+        index(new DefaultIndexPlan(inEsSettings).setTypes(types));
+    }
+
+    public void index( final Settings inEsSettings, String... aliases) throws CompassGpsException, IllegalStateException {
+        index(new DefaultIndexPlan(inEsSettings).setAliases(aliases));
     }
 
     public synchronized void index(IndexPlan indexPlan) throws CompassGpsException, IllegalStateException {

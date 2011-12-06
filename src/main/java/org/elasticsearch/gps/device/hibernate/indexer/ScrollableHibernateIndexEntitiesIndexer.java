@@ -153,7 +153,7 @@ public class ScrollableHibernateIndexEntitiesIndexer implements HibernateIndexEn
 
                 hibernateTransaction.commit();
             } catch (Exception e) {
-                log.error(device.buildMessage("Failed to index the database"), e);
+                log.error(device.buildMessage("Failed to index the database. Entities: " + Arrays.toString(entities)), e);
                 if (cursor != null) {
                     try {
                         cursor.close();

@@ -16,6 +16,8 @@
 
 package org.elasticsearch.gps;
 
+import org.elasticsearch.common.settings.Settings;
+
 /**
  * Index plan is a general class representing what needs to be indexed. By default,
  * everything (types, aliases, and sub indexes) are set to <code>null</code>.
@@ -29,6 +31,8 @@ package org.elasticsearch.gps;
  * @author kimchy
  */
 public interface IndexPlan {
+
+    Settings getSettings();
 
     /**
      * Sets the given classes that will be indexed. <code>null</code> value

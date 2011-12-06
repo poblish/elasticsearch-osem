@@ -99,4 +99,10 @@ public class EntityInformation implements IndexEntity {
     public String[] getSubIndexes() {
         return subIndexes;
     }
+
+	@Override
+	public String toString()
+	{
+		return "EntityInformation{clazz=" + clazz + ", name=" + name + ", subIndexes=" + subIndexes + '}';
+	}
 }

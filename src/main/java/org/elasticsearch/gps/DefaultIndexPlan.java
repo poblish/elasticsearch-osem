@@ -13,54 +13,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.elasticsearch.gps;
 
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.osem.common.springframework.util.StringUtils;
-
 
 /**
  * @author kimchy
  */
-public class DefaultIndexPlan implements IndexPlan {
+public class DefaultIndexPlan implements IndexPlan
+{
+	private Class[] types;
+	private String[] aliases;
+	private String[] subIndexes;
+	private Settings esSettings;
 
-    private Class[] types;
+	public DefaultIndexPlan()
+	{
+	}
 
-    private String[] aliases;
+	public DefaultIndexPlan( final Settings inEsSettings)
+	{
+		esSettings = inEsSettings;
+	}
 
-    private String[] subIndexes;
+	public Class[] getTypes()
+	{
+		return types;
+	}
 
-    public Class[] getTypes() {
-        return types;
-    }
+	public IndexPlan setTypes(Class... types)
+	{
+		this.types = types;
+		return this;
+	}
 
-    public IndexPlan setTypes(Class ... types) {
-        this.types = types;
-        return this;
-    }
+	public String[] getAliases()
+	{
+		return aliases;
+	}
 
-    public String[] getAliases() {
-        return aliases;
-    }
+	public IndexPlan setAliases(String... aliases)
+	{
+		this.aliases = aliases;
+		return this;
+	}
 
-    public IndexPlan setAliases(String ... aliases) {
-        this.aliases = aliases;
-        return this;
-    }
+	public String[] getSubIndexes()
+	{
+		return subIndexes;
+	}
 
-    public String[] getSubIndexes() {
-        return subIndexes;
-    }
+	public IndexPlan setSubIndexes(String... subIndexes)
+	{
+		this.subIndexes = subIndexes;
+		return this;
+	}
 
-    public IndexPlan setSubIndexes(String ... subIndexes) {
-        this.subIndexes = subIndexes;
-        return this;
-    }
+	@Override
+	public Settings getSettings()
+	{
+		return esSettings;
+	}
 
-    public String toString() {
-        return "subIndexes[" + StringUtils.arrayToCommaDelimitedString(getSubIndexes()) + "], aliases[" +
-                StringUtils.arrayToCommaDelimitedString(getAliases()) + "], types [" +
-                StringUtils.arrayToCommaDelimitedString(getTypes()) + "]";
+	public String toString()
+	{
+		return "subIndexes[" + StringUtils.arrayToCommaDelimitedString(getSubIndexes()) + "], aliases["
+			+ StringUtils.arrayToCommaDelimitedString(getAliases()) + "], types ["
+			+ StringUtils.arrayToCommaDelimitedString(getTypes()) + "] using ES Settings: "
+			+ esSettings + "]";
 
-    }
+	}
 }

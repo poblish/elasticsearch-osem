@@ -152,9 +152,16 @@ public class SingleCompassGps extends AbstractCompassGps {
 
 		log.info("CREATING indices: " + Arrays.toString(theIndexesArray));
 
-		for ( String eachIndex : theIndexesArray)
+		for ( String eachIndex : theIndexesArray)    // (AGR) Should we batch?
 		{
-			theClient.create( new CreateIndexRequest(eachIndex)).actionGet();    // (AGR) Should we batch?
+			if ( inIndexPlan.getSettings() != null)
+			{
+				theClient.create( new CreateIndexRequest( eachIndex, inIndexPlan.getSettings())).actionGet();
+			}
+			else
+			{
+				theClient.create( new CreateIndexRequest(eachIndex)).actionGet();
+			}
 		}
 	}
 

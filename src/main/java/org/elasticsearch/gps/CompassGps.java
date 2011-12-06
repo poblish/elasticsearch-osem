@@ -16,6 +16,8 @@
 
 package org.elasticsearch.gps;
 
+import org.elasticsearch.common.settings.Settings;
+
 /**
  * <code>CompassGps</code> is responsible for managing
  * {@link org.compass.gps.CompassGpsDevice}s. It can hold one or more
@@ -88,6 +90,21 @@ public interface CompassGps {
      * Index just the aliases.
      */
     void index(String ... aliases) throws CompassGpsException, IllegalStateException;
+
+    /**
+     * Index just the given types.
+     */
+    void index( Settings inEsSettings) throws CompassGpsException, IllegalStateException;
+
+    /**
+     * Index just the given types.
+     */
+    void index( Settings inEsSettings, Class ... types) throws CompassGpsException, IllegalStateException;
+
+    /**
+     * Index just the aliases.
+     */
+    void index( Settings inEsSettings, String ... aliases) throws CompassGpsException, IllegalStateException;
 
     /**
      * Indexes all the different devices based on the given index plan. The index
