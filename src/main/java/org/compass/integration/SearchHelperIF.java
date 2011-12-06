@@ -9,6 +9,8 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.facet.AbstractFacetBuilder;
+import org.elasticsearch.search.facet.Facets;
 
 /**
  *
@@ -16,6 +18,8 @@ import org.elasticsearch.search.SearchHits;
  */
 public interface SearchHelperIF
 {
+	Facets getFacets( final QueryBuilder inQuery, final AbstractFacetBuilder inFacetB, final FilterBuilder inFilter, final String... inIndices);
+
 	SearchHits getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final String... inIndices);
 	SearchHits getHits( final QueryBuilder inQuery, final String... inIndices);
 	SearchHits getHits( final QueryBuilder inQuery, final int inMax, final String... inIndices);

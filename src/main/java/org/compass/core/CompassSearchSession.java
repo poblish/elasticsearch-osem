@@ -16,7 +16,6 @@
 
 package org.compass.core;
 
-import java.io.IOException;
 import java.io.Serializable;
 import org.compass.integration.InternalResource;
 import org.compass.integration.Resource;
@@ -34,6 +33,8 @@ import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.osem.core.ObjectContext;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.facet.AbstractFacetBuilder;
+import org.elasticsearch.search.facet.Facets;
 import org.elasticsearch.search.sort.SortOrder;
 
 /**
@@ -81,6 +82,14 @@ public interface CompassSearchSession {
 
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(DEFAULT_MATCHES_COUNT).execute().actionGet();
 			return _getHits(theResp);
+		}
+
+		@Override
+		public Facets getFacets( final QueryBuilder inQuery, final AbstractFacetBuilder inFacetB, final FilterBuilder inFilter, final String... inIndices)
+		{
+			Preconditions.checkArgument( inIndices.length >= 1);
+
+			return m_Client.prepareSearch(inIndices).addFacet(inFacetB).setQuery(inQuery).setFilter(inFilter).setSize(DEFAULT_MATCHES_COUNT).execute().actionGet().getFacets();
 		}
 
 		@Override
