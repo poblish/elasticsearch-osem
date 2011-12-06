@@ -22,7 +22,6 @@ import org.compass.integration.Resource;
 import org.compass.integration.Resources;
 import org.compass.integration.SearchHelperIF;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.base.Preconditions;
@@ -77,9 +76,6 @@ public interface CompassSearchSession {
 		{
 			Preconditions.checkArgument( inIndices.length >= 1);
 
-//			logger.info( "getHits( final QueryBuilder inQuery, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(DEFAULT_MATCHES_COUNT).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -97,9 +93,6 @@ public interface CompassSearchSession {
 		{
 			Preconditions.checkArgument( inIndices.length >= 1);
 
-//			logger.info( "getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final String... inIndices)");
-//			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices) + ", applying " + inFilter);
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(DEFAULT_MATCHES_COUNT).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -108,9 +101,6 @@ public interface CompassSearchSession {
 		public SearchHits getHits( final QueryBuilder inQuery, final int inMaxNum, final String... inIndices)
 		{
 			Preconditions.checkArgument( inIndices.length >= 1);
-
-//			logger.info( "getHits( final QueryBuilder inQuery, final int inMaxNum, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
 
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).execute().actionGet();
 			return _getHits(theResp);
@@ -121,9 +111,6 @@ public interface CompassSearchSession {
 		{
 			Preconditions.checkArgument( inIndices.length >= 1);
 
-//			logger.info( "getHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices) + ", applying " + inFilter);
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(inMaxNum).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -131,8 +118,6 @@ public interface CompassSearchSession {
 		// @Override
 		public GetResponse getResource( final String inIdx, final String inId)
 		{
-//			logger.info( "getResource('" + inIdx + "'," + inId + ")");
-
 			return m_Client.prepareGet( inIdx, DEFAULT_TYPE, inId).execute().actionGet();
 		}
 
@@ -172,13 +157,6 @@ public interface CompassSearchSession {
 		{
 			final XContentBuilder	theResBuilder = m_Ctxt.write(inResource);
 
-//			try {
-//				System.out.println("Saving '" + inResource.getAlias() + "' Resource: " + theResBuilder.string());
-//			}
-//			catch (IOException ex) {
-//				// NOOP
-//			}
-
 			m_Client.prepareIndex( inResource.getAlias(), DEFAULT_TYPE, inResource.getId())
 				.setSource(theResBuilder)
 				.execute().actionGet();
@@ -187,9 +165,6 @@ public interface CompassSearchSession {
 		@Override
 		public SearchHits sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)
 		{
-//			logger.info( "sortedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(DEFAULT_MATCHES_COUNT).addSort( inSortField, SortOrder.ASC).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -197,9 +172,6 @@ public interface CompassSearchSession {
 		@Override
 		public SearchHits sortedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
-//			logger.info( "sortedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).addSort( inSortField, SortOrder.ASC).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -207,9 +179,6 @@ public interface CompassSearchSession {
 		@Override
 		public SearchHits sortedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
-//			logger.info( "sortedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(inMaxNum).addSort( inSortField, SortOrder.ASC).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -217,9 +186,6 @@ public interface CompassSearchSession {
 		@Override
 		public SearchHits reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)
 		{
-//			logger.info( "reversedHits( final QueryBuilder inQuery, final String inSortField, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding: " + inQuery + " among " + Arrays.toString(inIndices));
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(DEFAULT_MATCHES_COUNT).addSort( inSortField, SortOrder.DESC).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -227,9 +193,6 @@ public interface CompassSearchSession {
 		@Override
 		public SearchHits reversedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
-//			logger.info( "reversedHits( final QueryBuilder inQuery, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setSize(inMaxNum).addSort( inSortField, SortOrder.DESC).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -237,9 +200,6 @@ public interface CompassSearchSession {
 		@Override
 		public SearchHits reversedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String inSortField, final String... inIndices)
 		{
-//			logger.info( "reversedHits( final QueryBuilder inQuery, final FilterBuilder inFilter, final int inMaxNum, final String inSortField, final String... inIndices)", (Object) inIndices);
-//			logger.info( "@ Finding " + inMaxNum + " recs for " + inQuery + " among " + Arrays.toString(inIndices));
-
 			final SearchResponse	theResp = m_Client.prepareSearch(inIndices).setQuery(inQuery).setFilter(inFilter).setSize(inMaxNum).addSort( inSortField, SortOrder.DESC).execute().actionGet();
 			return _getHits(theResp);
 		}
@@ -277,24 +237,7 @@ public interface CompassSearchSession {
 		@Override
 		public void index( final String inIndex, final String inType, final String inId, final XContentBuilder inInitialBuilder)
 		{
-//			try {
-//				System.out.println("\n#### Indexing: '" + inIndex + "' #" + inId + " ... " + inInitialBuilder.string() + "####\n");
-//			}
-//			catch (IOException ex) {}
-//
-//			final boolean		mappingAcked = m_Client.admin().indices().preparePutMapping(inIndex)
-//											  .setSource( m_Ctxt.getMapping(inClass) )
-//											  .setType(DEFAULT_TYPE)
-//											  .setIgnoreConflicts(false)
-//											  .execute()
-//											  .actionGet().getAcknowledged();
-//
-//			if (!mappingAcked)	// FIXME!
-//			{
-//				throw new RuntimeException("Mapping for '" + inIndex + "' not acknowledged!");
-//			}
-
-			final IndexResponse	theResponse = m_Client.prepareIndex( inIndex, inType, inId)
+			/* final IndexResponse	theResponse = */ m_Client.prepareIndex( inIndex, inType, inId)
 									.setSource(inInitialBuilder)
 									.execute()
 									.actionGet();
@@ -302,11 +245,7 @@ public interface CompassSearchSession {
 
 		private SearchHits _getHits( final SearchResponse inResponse)
 		{
-			final SearchHits		theHits = inResponse.getHits();
-
-		//	logger.info( "@ Response = " + ( theHits.getTotalHits() > 100 ? "(> 100 hits)" : inResponse));
-
-			return theHits;
+			return inResponse.getHits();
 		}
 
 		@Override
@@ -321,119 +260,6 @@ public interface CompassSearchSession {
 	Client getClient();
 
 	ObjectContext getObjectContext();
-
-    /**
-     * Runtimes settings that apply on the session level.
-     *
-     * @return Runtime settings applies on the session level
-     */
-    // (AGR_OSEM) ... CompassSettings getSettings();
-
-    /**
-     * When not using the {@link org.compass.core.CompassTransaction} interface, will begin a local transaction
-     * instead of the configured transaction.
-     */
-    // (AGR_OSEM) ... CompassSearchSession useLocalTransaction();
-
-    /**
-     * Returns a Resource that match the mapping specified for the defined class
-     * type, and specified id. The id can be an object of the class (with the id
-     * attributes set), an array of id objects, or the actual id object. Returns
-     * <code>null</code> if the object is not found.
-     *
-     * @param clazz The class that represents the required mapping
-     * @param id    The id that identifies the resource
-     * @return The resource, returns <code>null</code> if not found
-     * @throws CompassException
-     */
-   // (AGR_OSEM) ...  Resource getResource(Class clazz, Object id) throws CompassException;
-
-    /**
-     * Returns a Resource that match the mapping specified for the defined class
-     * type, and specified ids.
-     *
-     * @param clazz The class that represents the required mapping
-     * @param ids   The ids that identifies the resource
-     * @return The resource, returns <code>null</code> if not found
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... Resource getResource(Class clazz, Object... ids) throws CompassException;
-
-    /**
-     * Returns a Resource that match the mapping specified for the defined alias
-     * (possibley different object types), and matches the specified id. The id
-     * can be an object of the class (with the id attributes set), an array of
-     * id objects, or the actual id object. Returns <code>null</code> if the
-     * object is not found.
-     *
-     * @param alias The alias that represents the required mapping
-     * @param id    The id that identifies the resource
-     * @return The resource
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... Resource getResource(String alias, Object id) throws CompassException;
-
-    /**
-     * Returns a Resource that match the mapping specified for the defined alias
-     * (possibley different object types), and matches the specified ids. Returns
-     * <code>null</code> if the object is not found.
-     *
-     * @param alias The alias that represents the required mapping
-     * @param ids   The ids that identifies the resource
-     * @return The resource
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... Resource getResource(String alias, Object... ids) throws CompassException;
-
-    /**
-     * Loads and returns a Resource that match the mapping specified for the
-     * defined class, and matches the specified id. The id can be an object of
-     * the class (with the id attributes set), an array of id objects, or the
-     * actual id object. Throws an exception if the resource is not found.
-     *
-     * @param clazz The class that represents the required mapping
-     * @param id    The id that identifies the resource
-     * @return The resource
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... Resource loadResource(Class clazz, Object id) throws CompassException;
-
-    /**
-     * Loads and returns a Resource that match the mapping specified for the
-     * defined class, and matches the specified ids. Throws an exception if
-     * the resource is not found.
-     *
-     * @param clazz The class that represents the required mapping
-     * @param ids   The ids that identifies the resource
-     * @return The resource
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... Resource loadResource(Class clazz, Object... ids) throws CompassException;
-
-    /**
-     * Loads and returns a Resource that match the mapping specified for the
-     * defined alias, and matches the specified id. The id can be an object of
-     * the class (with the id attributes set), an array of id objects, or the
-     * actual id object. Throws an exception if the resource is not found.
-     *
-     * @param alias The alias that represents the required mapping
-     * @param id    The id that identifies the resource
-     * @return The resource
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... Resource loadResource(String alias, Object id) throws CompassException;
-
-    /**
-     * Loads and returns a Resource that match the mapping specified for the
-     * defined alias, and matches the specified ids. Throws an exception if
-     * the resource is not found.
-     *
-     * @param alias The alias that represents the required mapping
-     * @param ids   The ids that identifies the resource
-     * @return The resource
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... Resource loadResource(String alias, Object... ids) throws CompassException;
 
     /**
      * Returns an object that match the mapping specified for the defined class,
@@ -532,71 +358,6 @@ public interface CompassSearchSession {
      * @throws CompassException
      */
     Object load(String alias, Object... ids) throws CompassException;
-
-    /**
-     * Finds a list of objects that match the specified query. The query syntax
-     * is a search engine format query. For detailed description of the query
-     * syntax please visit the site.
-     * <p>
-     * Several examples are:
-     * <ul>
-     * <li>A set of words - i.e. "Jack London". Compass will search the default
-     * property (usually ALL properties, specified in CompassEnvironment).</li>
-     * <li>A set of words prefixed by meta data name - i.e. author:"Jack
-     * London". Compass will search only meta data name author matching keywords
-     * Jack London.
-     * <li>Multiple meta data names - i.e. author:"Jack London" AND book:Fang*.
-     * Compass will search both meta data name author matching keywords Jack
-     * London and meta data name book matching wildcard Fang*</li>
-     * </ul>
-     * </p>
-     * <p>
-     * Note that the list may contains several object types (classes) with no
-     * relation between them (except for the semantic relation).
-     * </p>
-     *
-     * @param query The query string to search by
-     * @return A hits of objects that matches the query string
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... CompassHits find(String query) throws CompassException;
-
-    /**
-     * Creats a new query builder, used to build queries programmatically.
-     *
-     * @return The query builder.
-     */
-    // (AGR_OSEM) ... CompassQueryBuilder queryBuilder() throws CompassException;
-
-    /**
-     * Creats a new query filter builder, used to build filters of queries
-     * programmatically.
-     *
-     * @return The query filter builder.
-     */
-    // (AGR_OSEM) ... CompassQueryFilterBuilder queryFilterBuilder() throws CompassException;
-
-    /**
-     * Creates a new terms frequencies builder used to get terms names and
-     * freqs for a list of property names.
-     *
-     * <p>Note, term frequencies are updated to reflect latest changes to the index
-     * only after an optimization has taken place (note, calling optimize might not
-     * cause optimization).
-     *
-     * @param names The property names
-     * @return A term freqs builder
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... CompassTermFreqsBuilder termFreqsBuilder(String... names) throws CompassException;
-
-    /**
-     * Returns an Analyzer helper. Can be used to help analyze given texts.
-     *
-     * @return the analyzer helper
-     * @throws CompassException
-     */
-    // (AGR_OSEM) ... CompassAnalyzerHelper analyzerHelper() throws CompassException;
 
     /**
      * Closes the search session.
