@@ -136,17 +136,6 @@ public class CompassTemplate implements CompassOperations {
     	/* (AGR) */ throw new UnsupportedOperationException("Not supported");
     }
 
-    /**
-     * A helper execute method for find operations.
-     *
-     * @param action the callback to execute.
-     * @return The hits that match the query
-     * @throws CompassException
-    public CompassHitsOperations executeFind(CompassCallback<CompassHitsOperations> action) throws CompassException {
-        return execute(action);
-    }
-     */
-
     // Compass Operations
 
     public CompassSettings getSettings() {
@@ -198,17 +187,6 @@ public class CompassTemplate implements CompassOperations {
         });
     }
 
-/* (AGR_OSEM) Do we need this stuff?
-
-    public void delete(final CompassQuery query) throws CompassException {
-        execute(new CompassCallback<Object>() {
-            public Object doInCompass(CompassSession session) throws CompassException {
-                session.delete(query);
-                return null;
-            }
-        });
-    }
-*/
     public CompassHits find(final String query) throws CompassException {
         return execute(new CompassCallback<CompassHits>() {
             public CompassHits doInCompass(CompassSession session) throws CompassException {
@@ -229,26 +207,6 @@ public class CompassTemplate implements CompassOperations {
             }
         });
     }
-
-/* (AGR_OSEM) Do we need this stuff?
-
-    public CompassDetachedHits findWithDetach(final String query) throws CompassException {
-        return execute(new CompassCallback<CompassDetachedHits>() {
-            public CompassDetachedHits doInCompass(CompassSession session) throws CompassException {
-                return session.find(query).detach();
-            }
-        });
-    }
-
-    public CompassDetachedHits findWithDetach(final String query, final int from, final int size)
-            throws CompassException {
-        return execute(new CompassCallback<CompassDetachedHits>() {
-            public CompassDetachedHits doInCompass(CompassSession session) throws CompassException {
-                return session.find(query).detach(from, size);
-            }
-        });
-    }
-*/
 
     public <T> T get(final Class<T> clazz, final Object id) throws CompassException {
         return execute(new CompassCallback<T>() {

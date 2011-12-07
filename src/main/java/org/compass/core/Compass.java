@@ -135,47 +135,6 @@ public interface Compass extends Referenceable, Serializable {
     Compass clone(CompassSettings addedSettings);
 
     /**
-     * Creats a new query builder, used to build queries programmatically.
-     *
-     * @return The query builder.
-     */
-    // (AGR_OSEM) ... CompassQueryBuilder queryBuilder() throws CompassException;
-
-    /**
-     * Creates a new query filter builder that can create {@link org.compass.core.CompassQueryFilter}s
-     * that can later be added to {@link org.compass.core.CompassQuery#setFilter(CompassQueryFilter)}.
-     */
-    // (AGR_OSEM) ... CompassQueryFilterBuilder queryFilterBuilder() throws CompassException;
-    
-    /**
-     * Returns a resource factory allowing to create resources and properties.
-     */
-    // (AGR_OSEM) ... ResourceFactory getResourceFactory();
-
-    /**
-     * Retruns the search engine optimizer. You can controll the state of the
-     * optimizer (by calling <code>stop</code> or <code>start</code>), you
-     * can check if the index need optimization, and you can optimize the index.
-     *
-     * @return the search engine optimizer
-     */
-    // (AGR_OSEM) ... SearchEngineOptimizer getSearchEngineOptimizer();
-
-    /**
-     * Return the search engine index manager. You can control the index using
-     * it.
-     *
-     * @return the search engine index manager
-     */
-    // (AGR_OSEM) ... SearchEngineIndexManager getSearchEngineIndexManager();
-
-    /**
-     * Returns the spell check manager. Returns <code>null</code> if the spell check is not
-     * enabled.
-     */
-    // (AGR_OSEM) ... SearchEngineSpellCheckManager getSpellCheckManager();
-
-    /**
      * Returns the settings Compass was started with.
      */
     CompassSettings getSettings();
@@ -184,12 +143,6 @@ public interface Compass extends Referenceable, Serializable {
      * Returns <code>true</code> if the Compass instance is already closed
      */
     boolean isClosed();
-
-    /**
-     * Allows to get the configuraion object. One can add settings, and remove or add mappings.
-     * Once changes are done, {@link #rebuild()} should be called.
-     */
-    // (AGR_OSEM) ... CompassConfiguration getConfig();
 
     /**
      * Rebuilds Compass. Taking into account any changes done on the configuration object since
